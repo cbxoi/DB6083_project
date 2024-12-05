@@ -26,7 +26,7 @@ CREATE TABLE Category (
 CREATE TABLE Item (
     ItemID INT NOT NULL AUTO_INCREMENT,
     iDescription TEXT,
-    photo VARCHAR(20), -- BLOB is better here, but for simplicity, we change it to VARCHAR; For p3 implementation, we recommend you to implement as blob
+    photo blob,
     color VARCHAR(20),
     isNew BOOLEAN DEFAULT TRUE,
     hasPieces BOOLEAN,
@@ -79,7 +79,7 @@ CREATE TABLE Act (
 
 CREATE TABLE Location (
     roomNum INT NOT NULL,
-    shelfNum INT NOT NULL, -- not a point for deduction
+    shelfNum INT NOT NULL, 
     shelf VARCHAR(20),
     shelfDescription VARCHAR(200),
     PRIMARY KEY (roomNum, shelfNum)
@@ -89,7 +89,7 @@ CREATE TABLE Piece (
     ItemID INT NOT NULL,
     pieceNum INT NOT NULL,
     pDescription VARCHAR(200),
-    length INT NOT NULL, -- for simplicity
+    length INT NOT NULL, 
     width INT NOT NULL,
     height INT NOT NULL,
     roomNum INT NOT NULL,
