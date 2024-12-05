@@ -70,7 +70,7 @@ def loginAuth():
     #cursor used to send queries
     cursor = conn.cursor()
     #executes query
-    query = 'SELECT * FROM user WHERE username = %s and password = %s'
+    query = 'SELECT * FROM Person WHERE userName = %s and password = %s'
     cursor.execute(query, (username, password))
     #stores the results in a variable
     data = cursor.fetchone()
@@ -81,6 +81,16 @@ def loginAuth():
         #creates a session for the the user
         #session is a built in
         session['username'] = username
+
+        # if data['role'] == 'staff':
+        #   return redirect(url_for('home_staff'))
+        # if data['role'] == 'client':
+        #   return redirect(url_for('home_client'))
+        # if data['role'] == 'donor':
+        #   return redirect(url_for('home_donor'))
+        # if data['role'] == 'volunteer':
+        #   return redirect(url_for('home_volunteer'))
+
         return redirect(url_for('home'))
     else:
         #returns an error message to the html page
@@ -93,11 +103,22 @@ def registerAuth():
     #grabs information from the forms
     username = request.form['username']
     password = request.form['password']
+    fname = request.form['first_name']
+    lname = request.form['last_name']
+    email = request.form['email']
+    role = request.form['role']
+
+    if(not username or not password or not email):
+      error = "Information needed!"
+      return render_template('register.html', error = error)
+    if(not role):
+      error = "A role needed to be selected!"
+      return render_template('register.html', error = error)
 
     #cursor used to send queries
     cursor = conn.cursor()
     #executes query
-    query = 'SELECT * FROM user WHERE username = %s'
+    query = 'SELECT * FROM Person WHERE userName = %s'
     cursor.execute(query, (username))
     #stores the results in a variable
     data = cursor.fetchone()
@@ -109,23 +130,66 @@ def registerAuth():
         return render_template('register.html', error = error)
     else:
         ins = 'INSERT INTO user VALUES(%s, %s)'
-        cursor.execute(ins, (username, password))
+        cursor.execute(ins, (username, password, fname, lname, email))
         conn.commit()
         cursor.close()
         return render_template('index.html')
 
 
-@app.route('/home')
+@app.route('/person')
 def home():
     user = session['username']
-    cursor = conn.cursor();
-    query = 'SELECT ts, blog_post FROM blog WHERE username = %s ORDER BY ts DESC'
-    cursor.execute(query, (user))
-    data = cursor.fetchall()
-    cursor.close()
-    return render_template('home.html', username=user, posts=data)
+    return render_template('person.html', username=user)
 
-        
+# @app.route('/home_staff')
+# def home_staff():
+#     return render_template('home_staff.html', username = session['username'])
+# @app.route('/home_client')
+# def home_client():
+#     return render_template('home_client.html', username = session['username'])
+# @app.route('/home_donor')
+# def home_donor():
+#     return render_template('home_donor.html', username = session['username'])
+# @app.route('/home_volunteer')
+# def home_volunteer():
+#     return render_template('home_volunteer.html', username = session['username'])
+
+@app.route('/action_find_item', methods=['GET'])
+def find_item():
+    itemID = request.args['itemID']
+    cursor = conn.cursor()
+    # a query to find the pieces of the item and their locations
+    query = ''
+    cursor.execute(query, itemID)
+    pieces = cursor.fetchall()
+    cursor.close()
+    return render_template('find_item.html', itemID=itemID, pieces=pieces)
+
+@app.route('/action_find_order', methods=['GET'])
+def find_order():
+    orderID = request.args['orderID']
+    cursor = conn.cursor()
+    # a query to find items in the order along with pieces and their locations
+    query = ''
+    cursor.execute(query, orderID)
+    items = cursor.fetchall()
+    cursor.close()
+    return render_template('find_order.html', orderID=orderID, items=items)
+
+@app.route('/action_accept_donation', methos=['GET'])
+def accept_donation():
+    username = request.form['username']
+    cursor = conn.cursor()
+    # a query to find the user
+    query = ''
+    cursor.execute(query, itemID)
+    user = cursor.fetchone()
+    if user['role'] != 'donor':
+        error = 'This user is not a donor'
+        return render_template('person.html', error=error)
+    cursor.close()
+    return render_template('accept_donation.html', username=user['userName'])
+
 @app.route('/post', methods=['GET', 'POST'])
 def post():
     username = session['username']

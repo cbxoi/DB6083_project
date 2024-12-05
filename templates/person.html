@@ -1,0 +1,32 @@
+<html>
+<head>
+</head>
+<body>
+
+<h1>Welcome {{username}}</h1>
+
+<form action="/action_find_item" method="GET">
+  <label for="itemID"> Enter a itemID: </label>
+	<input type="text" name = "item" placeholder="item" required/> </br>
+	<input type="submit" value = Post />
+</form>
+
+<form action="/action_find_order" method="GET">
+  <label for="orderID"> Enter an orderID: </label>
+	<input type="text" name = "order" placeholder="order" required/> </br>
+	<input type="submit" value = Post />
+</form>
+
+<form action="/action_accept_donation" method="GET">
+  <label for="username"> Enter an username: </label>
+	<input type="text" name = "user" placeholder="user" required/> </br>
+	<input type="submit" value = Post />
+</form>
+
+<a href="/upload_form">Upload a photo</a>
+<br>
+<a href="/logout">Logout</a>
+
+</body>
+
+</html>

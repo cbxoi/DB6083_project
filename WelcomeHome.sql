@@ -1,23 +1,17 @@
 -- Delete all entities first
 Drop table if exists ItemIn;
-Drop table if exists `For`;
-Drop table if exists Supervised;
 Drop table if exists Delivered;
 Drop table if exists Act;
 Drop table if exists PersonPhone;
 Drop table if exists DonatedBy;
-Drop table if exists PieceIn;
-Drop table if exists `Of`;
-Drop table if exists ItemCategory;
+Drop table if exists Ordered;
 
 Drop table if exists Piece;
-Drop table if exists Category;
 Drop table if exists Item;
+Drop table if exists Category;
 Drop table if exists `Location`;
 Drop table if exists Person;
 Drop table if exists `Role`;
-Drop table if exists `Order`;
-
 
 
 -- Create all entities
@@ -90,8 +84,6 @@ CREATE TABLE Location (
     shelfDescription VARCHAR(200),
     PRIMARY KEY (roomNum, shelfNum)
 );
-
-
 
 CREATE TABLE Piece (
     ItemID INT NOT NULL,
