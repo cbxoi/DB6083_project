@@ -24,7 +24,8 @@ CREATE TABLE Category (
 );
 
 CREATE TABLE Item (
-    ItemID INT NOT NULL AUTO_INCREMENT,
+    ItemID INT NOT NULL,
+    quantityNum INT NOT NULL, --Handle duplicate items
     iDescription TEXT,
     photo blob,
     color VARCHAR(20),
@@ -33,7 +34,7 @@ CREATE TABLE Item (
     material VARCHAR(50),
     mainCategory VARCHAR(50) NOT NULL,
     subCategory VARCHAR(50) NOT NULL,
-    PRIMARY KEY (ItemID),
+    PRIMARY KEY (ItemID, quantityNum), --composite key
     FOREIGN KEY (mainCategory, subCategory) REFERENCES Category(mainCategory, subCategory)
 );
 
