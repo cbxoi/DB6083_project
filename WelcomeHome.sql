@@ -25,16 +25,16 @@ CREATE TABLE Category (
 
 CREATE TABLE Item (
     ItemID INT NOT NULL,
-    quantityNum INT NOT NULL, --Handle duplicate items
+    quantityNum INT NOT NULL, -- Handle duplicate items
     iDescription TEXT,
-    photo blob,
+    photo BLOB,
     color VARCHAR(20),
-    isNew BOOLEAN DEFAULT TRUE,
-    hasPieces BOOLEAN,
+    isNew TINYINT(1) DEFAULT 1,
+    hasPieces TINYINT(1),
     material VARCHAR(50),
     mainCategory VARCHAR(50) NOT NULL,
     subCategory VARCHAR(50) NOT NULL,
-    PRIMARY KEY (ItemID, quantityNum), --composite key
+    PRIMARY KEY (ItemID, quantityNum), -- composite key
     FOREIGN KEY (mainCategory, subCategory) REFERENCES Category(mainCategory, subCategory)
 );
 
