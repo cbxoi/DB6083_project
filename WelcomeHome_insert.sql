@@ -4,118 +4,78 @@ delete from Act;
 delete from Item;
 delete from DonatedBy;
 delete from Category;
-delete from ItemCategory;
 delete from Piece;
-delete from `Of`;
 delete from `Location`;
-delete from PieceIn;
-delete from `Order`;
+delete from Ordered;
 delete from ItemIn;
-delete from `For`;
-delete from Supervised;
+delete from PersonPhone;
 delete from Delivered;
 
-Insert into `Role` values ('1', 'staff');
-Insert into `Role` values ('2', 'volunteer');
-Insert into `Role` values ('3', 'client');
-Insert into `Role` values ('4', 'donor');
+INSERT INTO Category (mainCategory, subCategory, catNotes)
+VALUES
+    ('Furniture', 'Tables', 'Tables for dining and working'),
+    ('Furniture', 'Chairs', 'Various types of chairs'),
+    ('Electronics', 'Laptops', 'Portable computers');
 
--- C.a.
-Insert into Person values ('BuxiaoChu1', 'password', 'Buxiao', 'Chu', 'bc3730@nyu.com');
-Insert into Person values ('XingyuXian2', 'password', 'Xingyu', 'Xian', '');
-Insert into Person values ('YiboZhang3', 'password', 'Yibo', 'Zhang', '');
-Insert into PersonPhone values ('BuxiaoChu1', '1234567890');
-Insert into PersonPhone values ('XingyuXian2', '0987654321');
-Insert into PersonPhone values ('YiboZhang3', '1357924680');
-Insert into Act values ('BuxiaoChu1', '4');
-Insert into Act values ('XingyuXian2', '3');
-Insert into Act values ('YiboZhang3', '2');
+INSERT INTO Item (ItemID, quantityNum, iDescription, color, isNew, hasPieces, material, mainCategory, subCategory)
+VALUES
+    (1001, 1, 'Wooden dining table', 'Brown', 1, 1, 'Wood', 'Furniture', 'Tables'),
+    (1002, 2, 'Ergonomic office chair', 'Black', 1, 0, 'Plastic', 'Furniture', 'Chairs'),
+    (1003, 1, 'Gaming laptop', 'Silver', 1, 0, 'Metal', 'Electronics', 'Laptops');
 
-Insert into Item values ('1001', 'A yellow sofa', '', 'yellow', TRUE, '1', 'leather');
-Insert into DonatedBy values ('BuxiaoChu1', '1001', '2024-11-01');
-Insert into Piece values('10001', 'cushion', '30', '30', '5');
-Insert into Piece values('10002', 'sofa body', '35', '35', '60');
-Insert into Category values('Furniture', 'Sofa', 'A place to sit');
-Insert into ItemCategory values('Furniture', 'Sofa', '1001');
-Insert into `Of` values('10001', '1001');
-Insert into `Of` values('10002', '1001');
-Insert into `Location` values('5', '0', '');
-Insert into PieceIn values( '5', '0', '10001', '');
-Insert into PieceIn values( '5', '0', '10002', '');
+INSERT INTO Person (userName, password, fname, lname, email)
+VALUES
+    ('test1', '123', 'Buxiao', 'Chu', 'bc3730@nyu.com'),
+    ('test2', '123', 'Xingyu', 'Xian', 'bc3730@nyu.com'),
+    ('test3', '123', 'Yibo', 'Zhang', 'yz10589@nyu.com');
 
--- C.b.
-Insert into Item values ('1002', 'A dining table set', '', 'brown', TRUE, '3', 'wood');
-Insert into DonatedBy values ('BuxiaoChu1', '1002', '2024-10-01');
-Insert into Piece values('10003', 'chair_1', '20', '20', '50');
-Insert into Piece values('10004', 'chair_2', '30', '30', '50');
-Insert into Piece values('10005', 'table', '100', '100', '120');
-Insert into Category values('Furniture', 'Tables', 'A place to have meals');
-Insert into ItemCategory values('Furniture', 'Tables', '1002');
-Insert into `Of` values('10003', '1002');
-Insert into `Of` values('10004', '1002');
-Insert into `Of` values('10005', '1002');
-Insert into `Location` values('4', '1', 'The first shelf in Room 4');
-Insert into PieceIn values('4', '1', '10003', '');
-Insert into PieceIn values('4', '1', '10004', '');
-Insert into PieceIn values('4', '1', '10005', '');
+INSERT INTO PersonPhone (userName, phone)
+VALUES
+    ('test1', '123-456-7890'),
+    ('test2', '987-654-3210'),
+    ('test3', '555-666-7777');
 
-Insert into `Order` values('12345', '2024-10-02', 'A dining table');
-Insert into ItemIn values('1002', '12345', TRUE);
-Insert into `For` values('12345', 'XingyuXian2');
-Insert into Supervised values('12345', 'YiboZhang3');
-Insert into Delivered values('12345', 'YiboZhang3', 'delivered', '2024-10-03');
+INSERT INTO DonatedBy (ItemID, userName, donateDate)
+VALUES
+    (1001, 'test1', '2024-10-01'),
+    (1002, 'test2', '2024-10-02'),
+    (1003, 'test3', '2024-10-03');
 
-SELECT 
-    p.pieceNum AS PieceNum,
-    i.itemID AS ItemID,
-    i.idescription AS ItemDescription,
-    p.pDescription AS PieceDscription,
-    c.mainCategory AS MainCategory,
-    c.subCategory AS SubCategory,
-    l.roomNum AS RoomNum,
-    l.shelfNum AS Shelf,
-    l.shelfDescription AS LocationDescription
-FROM 
-    Item i
-JOIN 
-    ItemIn ii ON i.itemID = ii.itemID
-JOIN 
-    `Order` o ON ii.orderID = o.orderID
-JOIN 
-    `Of` ofTable ON i.itemID = ofTable.itemID
-JOIN 
-    Piece p ON ofTable.pieceNum = p.pieceNum
-JOIN 
-    PieceIn pi ON p.pieceNum = pi.pieceNum
-JOIN 
-    Location l ON pi.roomNum= l.roomNum AND pi.shelfNum = l.shelfNum
-JOIN 
-    ItemCategory ic ON i.itemID = ic.itemID
-JOIN 
-    Category c ON ic.mainCategory = c.mainCategory AND ic.subCategory = c.subCategory
-WHERE 
-    o.orderID = '12345'
-ORDER BY 
-    p.pieceNum;
+INSERT INTO Role (roleID, rDescription)
+VALUES
+    ('staff', 'Staff member responsible for managing orders'),
+    ('volunteer', 'Volunteer assisting with order preparation'),
+    ('client', 'Client receiving donated items');
 
--- more data: cooking set
-Insert into Item values ('1003', 'A kitchen cooking set', '', 'silver', TRUE, '3', 'steel');
-Insert into DonatedBy values ('BuxiaoChu1', '1003', '2024-11-01');
-Insert into Piece values('10006', 'knives', '5', '5', '1');
-Insert into Piece values('10007', 'forks', '5', '5', '1');
-Insert into Piece values('10008', 'spoons', '5', '5', '1');
-Insert into Category values('Furniture', 'Utensils', 'Cooking tools');
-Insert into ItemCategory values('Furniture', 'Utensils', '1003');
-Insert into `Of` values('10006', '1003');
-Insert into `Of` values('10007', '1003');
-Insert into `Of` values('10008', '1003');
-Insert into `Location` values('5', '2', 'The second shelf in Room 5');
-Insert into PieceIn values('5', '2', '10006', '');
-Insert into PieceIn values('5', '2', '10007', '');
-Insert into PieceIn values('5', '2', '10008', '');
+INSERT INTO Act (userName, roleID)
+VALUES
+    ('test1', 'staff'),
+    ('test2', 'volunteer'),
+    ('test3', 'client');
 
-Insert into `Order` values('11111', '2024-11-02', 'A cooking set');
-Insert into ItemIn values('1003', '11111', TRUE);
-Insert into `For` values('11111', 'XingyuXian2');
-Insert into Supervised values('11111', 'YiboZhang3');
-Insert into Delivered values('11111', 'YiboZhang3', 'delivered', '2024-11-03');
+INSERT INTO Location (roomNum, shelfNum, shelf, shelfDescription)
+VALUES
+    (1, 1, 'A1', 'Top shelf in room 1'),
+    (1, 2, 'B1', 'Middle shelf in room 1'),
+    (2, 1, 'C1', 'Top shelf in room 2');
+
+INSERT INTO Piece (ItemID, pieceNum, pDescription, length, width, height, roomNum, shelfNum, pNotes)
+VALUES
+    (1001, 1, 'Table top', 100, 60, 5, 1, 1, 'Main part of the table'),
+    (1001, 2, 'Table leg', 5, 5, 70, 1, 2, 'Leg of the table'),
+    (1002, 1, 'Chair base', 40, 40, 10, 2, 1, 'Base of the chair');
+
+INSERT INTO Ordered (orderDate, orderNotes, supervisor, client)
+VALUES
+    ('2024-10-05', 'Order for dining table', 'test1', 'test3'),
+    ('2024-10-06', 'Order for office chair', 'test1', 'test3');
+
+INSERT INTO ItemIn (ItemID, orderID, found)
+VALUES
+    (1001, 1, FALSE),
+    (1002, 2, TRUE);
+
+INSERT INTO Delivered (userName, orderID, status, date)
+VALUES
+    ('test2', 1, 'Delivered', '2024-10-07'),
+    ('test2', 2, 'In Transit', '2024-10-08');
