@@ -137,7 +137,7 @@ def registerAuth():
 
 
 @app.route('/person')
-def home():
+def person():
     user = session['username']
     return render_template('person.html', username=user)
 
@@ -173,8 +173,19 @@ def find_order():
     query = ''
     cursor.execute(query, orderID)
     items = cursor.fetchall()
+
+    # a query to count the number of items in the order
+    query = ''
+    cursor.execute(query, orderID)
+    count = cursor.fetchone()
+
+    for item in items:
+        # a query to find the pieces of the item and their locations
+        query = ''
+        cursor.execute(query, item['itemID'])
+        item['pieces'] = cursor.fetchall()
     cursor.close()
-    return render_template('find_order.html', orderID=orderID, items=items)
+    return render_template('find_order.html', orderID=orderID, quantity=count, items=items)
 
 @app.route('/action_accept_donation', methos=['GET'])
 def accept_donation():
@@ -182,13 +193,15 @@ def accept_donation():
     cursor = conn.cursor()
     # a query to find the user
     query = ''
-    cursor.execute(query, itemID)
+    cursor.execute(query, username)
     user = cursor.fetchone()
-    if user['role'] != 'donor':
-        error = 'This user is not a donor'
+    if user['role'] != 'staff':
+        error = 'This user is not a staff'
         return render_template('person.html', error=error)
     cursor.close()
-    return render_template('accept_donation.html', username=user['userName'])
+    return render_template('accept_donation.html', username=username)
+
+
 
 @app.route('/post', methods=['GET', 'POST'])
 def post():

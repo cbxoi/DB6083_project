@@ -30,6 +30,8 @@ find_order: 按ID找订单，并列出所有物品的位置 -> person
 
 accept_donation: 以staff身份接受donor捐赠，接收一个物品及所有组件的位置 -> person
 
+
+
 我们要做duplicate items吗？(feature12)
 
 start_order: 以staff身份添加order -> person_staff
@@ -39,3 +41,4 @@ shopping: 以staff身份添加item到现有order -> shopping, person_staff
 prepare_order: 以volunteer或staff身份修改order中item的状态 -> person_staff, person_volunteer
 
 relevant_order: 显示所有和当前账号相关的order -> person
+
