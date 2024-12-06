@@ -214,7 +214,7 @@ def get_donor():
         session['donor'] = donor
         return render_template('donor_got.html')
     else:
-        error = 'This user is not a donor'
+        error = 'This user is not a donor!'
         return render_template('accept_donation.html', error=error)
 
 @app.route('/add_item', methods=['POST'])
@@ -241,6 +241,7 @@ def add_item():
         cursor.execute(query, itemID)
         conn.commit()
         cursor.close()
+        session.pop('itemID')
         return render_template('person.html', success='Item added successfully!')
     else:
         # a query to insert the item into the database
@@ -251,11 +252,17 @@ def add_item():
         cursor.execute(query, donor, itemID, quantity)
         conn.commit()
         cursor.close()
-        session['itemID'] = itemID
-        return render_template('item_added.html')
+        if hasPieces == 1:
+            session['itemID'] = itemID
+            return render_template('item_added.html', itemID=itemID)
+        session.pop('itemID')
+        return render_template('person.html', success='Item added successfully!')
 
-@app.route('/add_pieces', methods=['POST'])
+@app.route('/add_pieces', methods=['GET','POST'])
 def add_pieces():
+    donor = session['donor']
+    itemID = session['itemID']
+
     pieceNum = request.form['pieceNum']
     pDesc = request.form['pDesc']
     length = request.form['length']
@@ -265,19 +272,32 @@ def add_pieces():
     shelfNum = request.form['shelfNum']
     pNotes = request.form['pNotes']
 
+    if not pieceNum or not pDesc or not length or not width or not height or not roomNum or not shelfNum:
+        flash('Please fill out all fields')
+        return render_template('item_added.html')
+
     cursor = conn.cursor()
     # a query to Insert the piece into the database
     query = ''
     cursor.execute(query, (session['itemID'], pieceNum, pDesc, length, width, height, roomNum, shelfNum, pNotes))
     conn.commit()
+    # a query to find the pieces of the item and their locations
+    query = ''
+    cursor.execute(query, itemID)
+    item = cursor.fetchall()
     cursor.close()
-    return render_template('item_added.html')
+    flash('Piece added successfully')
+    return render_template('item_added.html', itemID=itemID, item=item)
 
 @app.route('/end_adding_pieces', methods=['GET'])
 def end_adding_pieces():
     session.pop('itemID')
     session.pop('donor')
     return render_template('person.html', success='Item added successfully!')
+
+
+#------------------------------------------------------------------------------
+
 
 @app.route('/post', methods=['GET', 'POST'])
 def post():
@@ -341,6 +361,7 @@ def upload_file():
 			flash('Allowed file types are txt, pdf, png, jpg, jpeg, gif')
 			return redirect(request.url)
 
+#------------------------------------------------------------------------------
 
 @app.route('/logout')
 def logout():

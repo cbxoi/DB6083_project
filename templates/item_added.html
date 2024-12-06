@@ -1,0 +1,57 @@
+<html>
+<head>
+</head>
+<body>
+
+<h1>Please add a piece for this item: {{itemID}}</h1>
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+<form action="/add_pieces" method="POST">
+  <input type="number" name = "pieceNum" placeholder="pieceNum" required/> </br>
+	<input type="text" name = "pDesc" placeholder="Description" required/> </br>
+	<input type="number" name = "length" placeholder="length"/></br>
+	<input type="number" name = "width" placeholder="width"/></br>
+  <input type="number" name = "height" placeholder="height" required/></br>
+  <input type="number" name = "roomNum" placeholder="roomNum" required/></br>
+  <input type="number" name = "shelfNum" placeholder="shelfNum" required/></br>
+	<input type="text" name = "pNotes" placeholder="notes" required/> </br>
+	<input type="submit" value = Add_this_piece />
+</form>
+
+<form action="/end_adding_pieces" method="GET">
+  <input type="submit" value = Finish />
+</form>
+
+<br>
+<h2>Existing Pieces:</h2>
+<table>
+	<th>pieceNumber</th>
+	<th>roomNumber</th>
+  <th>shelfNumber</th>
+
+{% for piece in item %}
+	<tr>
+		<td>{{piece.pieceNum}}</td>
+		<td>{{piece.roomNum}}</td>
+    <td>{{piece.shelfNum}}</td>
+	</tr>
+{% endfor %}
+</table>
+
+<br>
+<a href="/person"> Cancel adding pieces </a>
+<br>
+<a href="/logout">Logout</a>
+
+</body>
+
+</html>

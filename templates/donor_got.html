@@ -1,0 +1,54 @@
+<html>
+<head>
+</head>
+<body>
+
+<h1>Please enter the information of the item</h1>
+
+<!-- 
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %} -->
+
+
+<form action="/add_item" method="POST">
+  <input type="number" name = "ItemID" placeholder="ItemID" required/> </br>
+  <input type="number" name = "quantity" placeholder="quantity" required/> </br>
+	<input type="text" name = "iDesc" placeholder="Description" required/> </br>
+	<input type="text" name = "Color" placeholder="color"/></br>
+	<input type="text" name = "material" placeholder="material"/></br>
+  <input type="text" name = "mainCategory" placeholder="mainCategory" required/></br>
+  <input type="text" name = "subCategory" placeholder="subCategory" required/></br>
+
+  <label for="isNew"> Is it new? </label>
+  <select id="isNew" name="isNew" required>
+    <option value="1"> Yes </option>
+    <option value="0"> No </option>
+  </select>
+
+  <label for="hasPieces"> Is it has several pieces? </label>
+  <select id="hasPieces" name="hasPieces" required>
+    <option value="1"> Yes </option>
+    <option value="0"> No </option>
+  </select>
+
+	<input type="submit" value = Post />
+  {% if error %}
+		<p class="error"><strong>Error:</strong> {{error}}</p>
+	{% endif %}
+</form>
+
+
+<a href="/person"> Cancel this donate </a>
+<br>
+<a href="/logout">Logout</a>
+
+</body>
+
+</html>
