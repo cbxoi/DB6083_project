@@ -24,16 +24,17 @@ CREATE TABLE Category (
 );
 
 CREATE TABLE Item (
-    ItemID INT NOT NULL AUTO_INCREMENT,
+    ItemID INT NOT NULL,
+    quantityNum INT NOT NULL, -- Handle duplicate items
     iDescription TEXT,
-    photo VARCHAR(20), -- BLOB is better here, but for simplicity, we change it to VARCHAR; For p3 implementation, we recommend you to implement as blob
+    photo BLOB,
     color VARCHAR(20),
-    isNew BOOLEAN DEFAULT TRUE,
-    hasPieces BOOLEAN,
+    isNew TINYINT(1) DEFAULT 1,
+    hasPieces TINYINT(1),
     material VARCHAR(50),
     mainCategory VARCHAR(50) NOT NULL,
     subCategory VARCHAR(50) NOT NULL,
-    PRIMARY KEY (ItemID),
+    PRIMARY KEY (ItemID, quantityNum), -- composite key
     FOREIGN KEY (mainCategory, subCategory) REFERENCES Category(mainCategory, subCategory)
 );
 
@@ -79,7 +80,7 @@ CREATE TABLE Act (
 
 CREATE TABLE Location (
     roomNum INT NOT NULL,
-    shelfNum INT NOT NULL, -- not a point for deduction
+    shelfNum INT NOT NULL, 
     shelf VARCHAR(20),
     shelfDescription VARCHAR(200),
     PRIMARY KEY (roomNum, shelfNum)
@@ -89,7 +90,7 @@ CREATE TABLE Piece (
     ItemID INT NOT NULL,
     pieceNum INT NOT NULL,
     pDescription VARCHAR(200),
-    length INT NOT NULL, -- for simplicity
+    length INT NOT NULL, 
     width INT NOT NULL,
     height INT NOT NULL,
     roomNum INT NOT NULL,
