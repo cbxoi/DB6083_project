@@ -91,7 +91,7 @@ def loginAuth():
         # if data['role'] == 'volunteer':
         #   return redirect(url_for('home_volunteer'))
 
-        return redirect(url_for('home'))
+        return redirect(url_for('person'))
     else:
         #returns an error message to the html page
         error = 'Invalid login or username'
@@ -187,7 +187,7 @@ def find_order():
     cursor.close()
     return render_template('find_order.html', orderID=orderID, quantity=count, items=items)
 
-@app.route('/action_accept_donation', methos=['GET'])
+@app.route('/action_accept_donation', methods=['GET'])
 def accept_donation():
     username = request.form['username']
     cursor = conn.cursor()
@@ -195,13 +195,89 @@ def accept_donation():
     query = ''
     cursor.execute(query, username)
     user = cursor.fetchone()
+    cursor.close()
     if user['role'] != 'staff':
         error = 'This user is not a staff'
         return render_template('person.html', error=error)
-    cursor.close()
     return render_template('accept_donation.html', username=username)
 
+@app.route('/get_donor', methods=['GET'])
+def get_donor():
+    donor = request.form['username']
+    cursor = conn.cursor()
+    # a query to find the donor
+    query = ''
+    cursor.execute(query, donor)
+    user = cursor.fetchone()
+    cursor.close()
+    if user:
+        session['donor'] = donor
+        return render_template('donor_got.html')
+    else:
+        error = 'This user is not a donor'
+        return render_template('accept_donation.html', error=error)
 
+@app.route('/add_item', methods=['POST'])
+def add_item():
+    donor = session['donor']
+    itemID = request.form['itemID']
+    quantity = request.form['quantity']
+    iDesc = request.form['iDesc']
+    color = request.form['color']
+    isNew = request.form['isNew']
+    hasPieces = request.form['hasPieces']
+    material = request.form['material']
+    mainCategory = request.form['mainCategory']
+    subCategory = request.form['subCategory']
+
+    cursor = conn.cursor()
+    # a query to find if the item exists
+    query = ''
+    cursor.execute(query, itemID)
+    item = cursor.fetchone()
+    if item:
+        # a query to increase the quantity of the item by quantity
+        query = ''
+        cursor.execute(query, itemID)
+        conn.commit()
+        cursor.close()
+        return render_template('person.html', success='Item added successfully!')
+    else:
+        # a query to insert the item into the database
+        query = ''
+        cursor.execute(query, itemID)
+        # a query to insert the donation into the database
+        query = ''
+        cursor.execute(query, donor, itemID, quantity)
+        conn.commit()
+        cursor.close()
+        session['itemID'] = itemID
+        return render_template('item_added.html')
+
+@app.route('/add_pieces', methods=['POST'])
+def add_pieces():
+    pieceNum = request.form['pieceNum']
+    pDesc = request.form['pDesc']
+    length = request.form['length']
+    width = request.form['width']
+    height = request.form['height']
+    roomNum = request.form['roomNum']
+    shelfNum = request.form['shelfNum']
+    pNotes = request.form['pNotes']
+
+    cursor = conn.cursor()
+    # a query to Insert the piece into the database
+    query = ''
+    cursor.execute(query, (session['itemID'], pieceNum, pDesc, length, width, height, roomNum, shelfNum, pNotes))
+    conn.commit()
+    cursor.close()
+    return render_template('item_added.html')
+
+@app.route('/end_adding_pieces', methods=['GET'])
+def end_adding_pieces():
+    session.pop('itemID')
+    session.pop('donor')
+    return render_template('person.html', success='Item added successfully!')
 
 @app.route('/post', methods=['GET', 'POST'])
 def post():

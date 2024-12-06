@@ -9,23 +9,28 @@
 	}
 </style>
 
-Here are pieces in the item {{itemID}}:
+There are {{quantity}} items in order '{{orderID}}' :
+
+{% for item in items %}
+
+<h2>Item: {{ items.itemID }}</h2>
 
 <table>
-	<th>ItemID</th>
 	<th>pieceNum</th>
   <th>location_roomNum</th>
   <th>location_shelfNum</th>
 
 {% for line in pieces %}
 	<tr>
-		<td>{{line.ItemID}}</td>
 		<td>{{line.pieceNum}}</td>
     <td>{{line.roomNum}}</td>
     <td>{{line.shelfNum}}</td>
 	</tr>
 {% endfor %}
+
 </table>
+
+{% endfor %}
 
 <br>
 <br>

@@ -1,0 +1,45 @@
+<html>
+<head>
+</head>
+<body>
+
+<h1>Please enter the ID of the donor </h1>
+
+<form action="/get_donor" method="POST">
+  <label for="user"> Enter a userName: </label>
+	<input type="text" name = "username" placeholder="username" required/> </br>
+	<input type="submit" value = Post />
+  {% if error %}
+  <p class="error"><strong>Error:</strong> {{error}}</p>
+  {% endif %}
+</form>
+
+<h2>Please enter the information of the item</h2>
+
+<form action="/add_item" method="POST">
+  <input type="number" name = "ItemID" placeholder="ItemID" required/> </br>
+  <input type="number" name = "ItemID" placeholder="ItemID" required/> </br>
+	<input type="text" name = "Description" placeholder="item_description" required/> </br>
+	<input type="text" name = "Color" placeholder="Color"/></br>
+	<input type="text" name = "last_name" placeholder="last_name"/></br>
+  <input type="text" name = "email" placeholder="email" required/></br>
+	<input type="submit" value = Post />
+  {% if error %}
+		<p class="error"><strong>Error:</strong> {{error}}</p>
+	{% endif %}
+</form>
+
+<form action="/add_pieces" method="POST">
+  <label for="orderID"> Enter an orderID: </label>
+	<input type="text" name = "order" placeholder="order" required/> </br>
+	<input type="submit" value = Post />
+</form>
+
+
+<a href="/person">Finish adding a item</a>
+<br>
+<a href="/logout">Logout</a>
+
+</body>
+
+</html>
