@@ -136,22 +136,12 @@ def registerAuth():
 
 @app.route('/person')
 def person():
+    #set the session
     user = session['username']
     return render_template('person.html', username=user)
 
-# @app.route('/home_staff')
-# def home_staff():
-#     return render_template('home_staff.html', username = session['username'])
-# @app.route('/home_client')
-# def home_client():
-#     return render_template('home_client.html', username = session['username'])
-# @app.route('/home_donor')
-# def home_donor():
-#     return render_template('home_donor.html', username = session['username'])
-# @app.route('/home_volunteer')
-# def home_volunteer():
-#     return render_template('home_volunteer.html', username = session['username'])
-
+#feature 2
+#this action is in person.html
 @app.route('/action_find_item', methods=['POST'])
 def find_item():
     itemID = request.form['itemID']
@@ -163,6 +153,8 @@ def find_item():
     cursor.close()
     return render_template('find_item.html', itemID=itemID, pieces=pieces)
 
+#feature 3
+#this action is in person.html
 @app.route('/action_find_order', methods=['POST'])
 def find_order():
     orderID = request.form['orderID']
@@ -177,6 +169,7 @@ def find_order():
     cursor.execute(query, orderID)
     count = cursor.fetchone()
     
+    # Add information about the pieces of the items to the items tuples
     items = list(items)
     for item in items:
         # a query to find the pieces of the item and their locations
@@ -187,6 +180,8 @@ def find_order():
     cursor.close()
     return render_template('find_order.html', orderID=orderID, quantity=count['count'], items=items)
 
+#feature 4
+#this action is in person.html
 @app.route('/action_accept_donation', methods=['POST'])
 def accept_donation():
     username = session['username']
@@ -200,20 +195,26 @@ def accept_donation():
         cursor.close()
         error = 'This user is not a staff'
         return render_template('person.html', username=username ,error=error)
+    
     # a query to find the donor
     query = 'select * from act where username = %s'
     cursor.execute(query, donorname)
-    cursor.close()
     donor = cursor.fetchone()
+    cursor.close()
+
+    # check if the donor exists and is a donor
     if donor['roleID'] != 'donor':
         error = 'This user is not a donor'
         return render_template('person.html', username=username ,error=error)
     if not donor:
         error = 'Cannot find this donor'
         return render_template('person.html', username=username ,error=error)
+    
+    #set session
     session['donor'] = donorname
     return render_template('donor_got.html', username=donor)
 
+#accept_donation.html is not used now
 # @app.route('/get_donor', methods=['POST'])
 # def get_donor():
 #     donor = request.form['username']
@@ -230,6 +231,9 @@ def accept_donation():
 #         error = 'This user is not a donor!'
 #         return render_template('accept_donation.html', error=error)
 
+#feature 4
+#this action is in donor_got.html
+#add item and render pieces adding page if the item has pieces
 @app.route('/add_item', methods=['GET', 'POST'])
 def add_item():
     donor = session['donor']
@@ -248,6 +252,8 @@ def add_item():
     query = 'select * from item where itemID = %s'
     cursor.execute(query, itemID)
     item = cursor.fetchone()
+
+    # if the item exists in the database
     if item:
         # increase the quantity of the item by quantity
         upd = 'update item set quantityNum = quantityNum + %s where itemID = %s'
@@ -265,12 +271,16 @@ def add_item():
         cursor.execute(ins, (itemID, donor, quantity, datetime.now()))
         conn.commit()
         cursor.close()
+        # if the item has pieces, set the session and enter 'add_pieces' page
         if hasPieces == "1":
             session['itemID'] = itemID
             return render_template('item_added.html', itemID=itemID)
+        # remove the session
         session.pop('donor')
         return render_template('person.html', success='Item added successfully!')
 
+#feature 4
+#this action is in item_added.html
 @app.route('/add_pieces', methods=['GET','POST'])
 def add_pieces():
     donor = session['donor']
@@ -285,6 +295,7 @@ def add_pieces():
     shelfNum = request.form['shelfNum']
     pNotes = request.form['pNotes']
 
+    # check if all fields are filled
     if not pieceNum or not pDesc or not length or not width or not height or not roomNum or not shelfNum:
         flash('Please fill out all fields')
         return render_template('item_added.html')
@@ -294,6 +305,7 @@ def add_pieces():
     ins = 'insert into piece values(%s, %s, %s, %s, %s, %s, %s, %s, %s)'
     cursor.execute(ins, (session['itemID'], pieceNum, pDesc, length, width, height, roomNum, shelfNum, pNotes))
     conn.commit()
+
     # a query to find the pieces of the item and their locations
     query = 'select * from piece where itemID = %s'
     cursor.execute(query, itemID)
@@ -302,8 +314,12 @@ def add_pieces():
     flash('Piece added successfully')
     return render_template('item_added.html', itemID=itemID, item=item)
 
+#feature 4
+#this action is in item_added.html
+#end adding pieces and return to home page
 @app.route('/end_adding_pieces', methods=['GET'])
 def end_adding_pieces():
+    #remove the session
     session.pop('itemID')
     session.pop('donor')
     return render_template('person.html', success='Item added successfully!')
