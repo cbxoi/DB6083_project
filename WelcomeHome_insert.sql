@@ -35,11 +35,11 @@ VALUES
     ('test2', '987-654-3210'),
     ('test3', '555-666-7777');
 
-INSERT INTO DonatedBy (ItemID, userName, donateDate)
+INSERT INTO DonatedBy (ItemID, userName, quantityNum, donateDate)
 VALUES
-    (1001, 'test1', '2024-10-01'),
-    (1002, 'test2', '2024-10-02'),
-    (1003, 'test3', '2024-10-03');
+    (1001, 'test1', 1, '2024-10-01'),
+    (1002, 'test2', 2, '2024-10-02'),
+    (1003, 'test3', 3, '2024-10-03');
 
 INSERT INTO Role (roleID, rDescription)
 VALUES
@@ -70,10 +70,10 @@ VALUES
     ('2024-10-05', 'Order for dining table', 'test1', 'test3'),
     ('2024-10-06', 'Order for office chair', 'test1', 'test3');
 
-INSERT INTO ItemIn (ItemID, orderID, found)
+INSERT INTO ItemIn (ItemID, orderID, quantityNum, found)
 VALUES
-    (1001, 1, FALSE),
-    (1002, 2, TRUE);
+    (1001, 1, 1, FALSE),
+    (1002, 2, 2, TRUE);
 
 INSERT INTO Delivered (userName, orderID, status, date)
 VALUES

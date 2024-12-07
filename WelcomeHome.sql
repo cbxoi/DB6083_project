@@ -58,6 +58,7 @@ CREATE TABLE PersonPhone (
 CREATE TABLE DonatedBy (
     ItemID INT NOT NULL,
     userName VARCHAR(50) NOT NULL,
+    quantityNum INT NOT NULL, -- Handle duplicate items
     donateDate DATE NOT NULL,
     PRIMARY KEY (ItemID, userName),
     FOREIGN KEY (ItemID) REFERENCES Item(ItemID),
@@ -115,6 +116,7 @@ CREATE TABLE Ordered (
 CREATE TABLE ItemIn (
     ItemID INT NOT NULL,
     orderID INT NOT NULL,
+    quantityNum INT NOT NULL, -- Handle duplicate items
     found BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (ItemID, orderID),
     FOREIGN KEY (ItemID) REFERENCES Item(ItemID),
