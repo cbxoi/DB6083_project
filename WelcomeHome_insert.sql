@@ -1,15 +1,16 @@
+delete from Delivered;
+delete from ItemIn;
+delete from Ordered;
+delete from PersonPhone;
+delete from Act;
+delete from DonatedBy;
+delete from Piece;
+delete from Item;
+
 delete from Person;
 delete from `Role`;
-delete from Act;
-delete from Item;
-delete from DonatedBy;
 delete from Category;
-delete from Piece;
 delete from `Location`;
-delete from Ordered;
-delete from ItemIn;
-delete from PersonPhone;
-delete from Delivered;
 
 INSERT INTO Category (mainCategory, subCategory, catNotes)
 VALUES
@@ -45,7 +46,8 @@ INSERT INTO Role (roleID, rDescription)
 VALUES
     ('staff', 'Staff member responsible for managing orders'),
     ('volunteer', 'Volunteer assisting with order preparation'),
-    ('client', 'Client receiving donated items');
+    ('client', 'Client receiving donated items'),
+    ('donor', 'Donor contributing items to the organization');
 
 INSERT INTO Act (userName, roleID)
 VALUES
@@ -65,10 +67,10 @@ VALUES
     (1001, 2, 'Table leg', 5, 5, 70, 1, 2, 'Leg of the table'),
     (1002, 1, 'Chair base', 40, 40, 10, 2, 1, 'Base of the chair');
 
-INSERT INTO Ordered (orderDate, orderNotes, supervisor, client)
+INSERT INTO Ordered (orderID, orderDate, orderNotes, supervisor, client)
 VALUES
-    ('2024-10-05', 'Order for dining table', 'test1', 'test3'),
-    ('2024-10-06', 'Order for office chair', 'test1', 'test3');
+    (1, '2024-10-05', 'Order for dining table', 'test1', 'test3'),
+    (2, '2024-10-06', 'Order for office chair', 'test1', 'test3');
 
 INSERT INTO ItemIn (ItemID, orderID, quantityNum, found)
 VALUES

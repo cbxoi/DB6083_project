@@ -5,22 +5,22 @@
 
 <h1>Welcome {{username}}</h1>
 
-<form action="/action_find_item" method="GET">
+<form action="/action_find_item" method="POST">
   <label for="itemID"> Enter a itemID: </label>
-	<input type="text" name = "item" placeholder="item" required/> </br>
-	<input type="submit" value = Post />
+	<input type="number" name = "itemID" placeholder="itemID" required/> </br>
+	<input type="submit" value = Find_it />
 </form>
 
-<form action="/action_find_order" method="GET">
+<form action="/action_find_order" method="POST">
   <label for="orderID"> Enter an orderID: </label>
-	<input type="text" name = "order" placeholder="order" required/> </br>
-	<input type="submit" value = Post />
+	<input type="number" name = "orderID" placeholder="orderID" required/> </br>
+	<input type="submit" value = Find_it />
 </form>
 
-<form action="/action_accept_donation" method="GET">
-  <label for="username"> Enter an username: </label>
-	<input type="text" name = "user" placeholder="user" required/> </br>
-	<input type="submit" value = Post />
+<form action="/action_accept_donation" method="POST">
+  <label for="donorname"> Start a donation: </label>
+	<input type="text" name = "donorname" placeholder="donorname" required/> </br>
+	<input type="submit" value = donate />
   {% if error %}
 		<p class="error"><strong>Error:</strong> {{error}}</p>
 	{% endif %}

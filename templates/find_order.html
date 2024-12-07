@@ -9,24 +9,27 @@
 	}
 </style>
 
-There are {{quantity}} items in order '{{orderID}}' :
+<h1>There are {{quantity}} items in order {{orderID}} : </h1>
 
 {% for item in items %}
 
-<h2>Item: {{ items.itemID }}</h2>
+<br>
+<h2>There's {{ items.quantitynum }} {{ items.itemID }} in this order</h2>
+<br>
+<h2> Here are its pieces:</h2>
 
 <table>
 	<th>pieceNum</th>
   <th>location_roomNum</th>
   <th>location_shelfNum</th>
 
-{% for line in pieces %}
-	<tr>
-		<td>{{line.pieceNum}}</td>
-    <td>{{line.roomNum}}</td>
-    <td>{{line.shelfNum}}</td>
-	</tr>
-{% endfor %}
+  {% for line in item.pieces %}
+	  <tr>
+		  <td>{{line.pieceNum}}</td>
+      <td>{{line.roomNum}}</td>
+      <td>{{line.shelfNum}}</td>
+	  </tr>
+  {% endfor %}
 
 </table>
 
@@ -34,7 +37,7 @@ There are {{quantity}} items in order '{{orderID}}' :
 
 <br>
 <br>
-<a href="/home">Back to home</a>
+<a href="/person">Back to home</a>
 <br>
 <br>
 <a href="/logout">Logout</a>

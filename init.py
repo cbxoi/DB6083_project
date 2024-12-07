@@ -1,3 +1,5 @@
+from datetime import datetime
+
 #Import Flask Library
 from flask import Flask, render_template, request, session, url_for, redirect, flash
 import pymysql.cursors
@@ -19,7 +21,7 @@ conn = pymysql.connect(host='localhost',
                        port=3306,
                        user='root',
                        password='root',
-                       db='FlaskDemo',
+                       db='welcomehome',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
@@ -81,16 +83,6 @@ def loginAuth():
         #creates a session for the the user
         #session is a built in
         session['username'] = username
-
-        # if data['role'] == 'staff':
-        #   return redirect(url_for('home_staff'))
-        # if data['role'] == 'client':
-        #   return redirect(url_for('home_client'))
-        # if data['role'] == 'donor':
-        #   return redirect(url_for('home_donor'))
-        # if data['role'] == 'volunteer':
-        #   return redirect(url_for('home_volunteer'))
-
         return redirect(url_for('person'))
     else:
         #returns an error message to the html page
@@ -103,12 +95,13 @@ def registerAuth():
     #grabs information from the forms
     username = request.form['username']
     password = request.form['password']
-    fname = request.form['first_name']
-    lname = request.form['last_name']
+    fname = request.form['fname']
+    lname = request.form['lname']
     email = request.form['email']
+    phone = request.form['phone']
     role = request.form['role']
 
-    if(not username or not password or not email):
+    if(not username or not password or not email or not phone):
       error = "Information needed!"
       return render_template('register.html', error = error)
     if(not role):
@@ -129,8 +122,13 @@ def registerAuth():
         error = "This user already exists"
         return render_template('register.html', error = error)
     else:
-        ins = 'INSERT INTO user VALUES(%s, %s)'
+        #Insert the user into the database
+        ins = 'INSERT INTO Person VALUES(%s, %s, %s, %s, %s)'
         cursor.execute(ins, (username, password, fname, lname, email))
+        ins = 'insert into PersonPhone values(%s, %s)'
+        cursor.execute(ins, (username, phone))
+        ins = 'insert into act values(%s, %s)'
+        cursor.execute(ins, (username, role))
         conn.commit()
         cursor.close()
         return render_template('index.html')
@@ -154,73 +152,88 @@ def person():
 # def home_volunteer():
 #     return render_template('home_volunteer.html', username = session['username'])
 
-@app.route('/action_find_item', methods=['GET'])
+@app.route('/action_find_item', methods=['POST'])
 def find_item():
-    itemID = request.args['itemID']
+    itemID = request.form['itemID']
     cursor = conn.cursor()
     # a query to find the pieces of the item and their locations
-    query = ''
+    query = 'select * from piece where itemID = %s'
     cursor.execute(query, itemID)
     pieces = cursor.fetchall()
     cursor.close()
     return render_template('find_item.html', itemID=itemID, pieces=pieces)
 
-@app.route('/action_find_order', methods=['GET'])
+@app.route('/action_find_order', methods=['POST'])
 def find_order():
-    orderID = request.args['orderID']
+    orderID = request.form['orderID']
     cursor = conn.cursor()
-    # a query to find items in the order along with pieces and their locations
-    query = ''
+    # a query to find items in the order
+    query = 'select * from ItemIn where orderID = %s'
     cursor.execute(query, orderID)
     items = cursor.fetchall()
 
     # a query to count the number of items in the order
-    query = ''
+    query = 'select count(*) as count from ItemIn where orderID = %s'
     cursor.execute(query, orderID)
     count = cursor.fetchone()
-
+    
+    items = list(items)
     for item in items:
         # a query to find the pieces of the item and their locations
-        query = ''
-        cursor.execute(query, item['itemID'])
+        query = 'select * from piece where itemID = %s'
+        cursor.execute(query, item['ItemID'])
         item['pieces'] = cursor.fetchall()
+    items = tuple(items)
     cursor.close()
-    return render_template('find_order.html', orderID=orderID, quantity=count, items=items)
+    return render_template('find_order.html', orderID=orderID, quantity=count['count'], items=items)
 
-@app.route('/action_accept_donation', methods=['GET'])
+@app.route('/action_accept_donation', methods=['POST'])
 def accept_donation():
-    username = request.form['username']
+    username = session['username']
+    donorname = request.form['donorname']
     cursor = conn.cursor()
     # a query to find the user
-    query = ''
+    query = 'select * from act where username = %s'
     cursor.execute(query, username)
     user = cursor.fetchone()
-    cursor.close()
-    if user['role'] != 'staff':
+    if user['roleID'] != 'staff':
+        cursor.close()
         error = 'This user is not a staff'
-        return render_template('person.html', error=error)
-    return render_template('accept_donation.html', username=username)
-
-@app.route('/get_donor', methods=['GET'])
-def get_donor():
-    donor = request.form['username']
-    cursor = conn.cursor()
+        return render_template('person.html', username=username ,error=error)
     # a query to find the donor
-    query = ''
-    cursor.execute(query, donor)
-    user = cursor.fetchone()
+    query = 'select * from act where username = %s'
+    cursor.execute(query, donorname)
     cursor.close()
-    if user:
-        session['donor'] = donor
-        return render_template('donor_got.html')
-    else:
-        error = 'This user is not a donor!'
-        return render_template('accept_donation.html', error=error)
+    donor = cursor.fetchone()
+    if donor['roleID'] != 'donor':
+        error = 'This user is not a donor'
+        return render_template('person.html', username=username ,error=error)
+    if not donor:
+        error = 'Cannot find this donor'
+        return render_template('person.html', username=username ,error=error)
+    session['donor'] = donorname
+    return render_template('donor_got.html', username=donor)
 
-@app.route('/add_item', methods=['POST'])
+# @app.route('/get_donor', methods=['POST'])
+# def get_donor():
+#     donor = request.form['username']
+#     cursor = conn.cursor()
+#     # a query to find the donor
+#     query = 'select * from person where username = %s'
+#     cursor.execute(query, donor)
+#     user = cursor.fetchone()
+#     cursor.close()
+#     if user:
+#         session['donor'] = donor
+#         return render_template('donor_got.html')
+#     else:
+#         error = 'This user is not a donor!'
+#         return render_template('accept_donation.html', error=error)
+
+@app.route('/add_item', methods=['GET', 'POST'])
 def add_item():
     donor = session['donor']
-    itemID = request.form['itemID']
+    itemID = request.form['ItemID']
     quantity = request.form['quantity']
     iDesc = request.form['iDesc']
     color = request.form['color']
@@ -232,30 +245,30 @@ def add_item():
 
     cursor = conn.cursor()
     # a query to find if the item exists
-    query = ''
+    query = 'select * from item where itemID = %s'
     cursor.execute(query, itemID)
     item = cursor.fetchone()
     if item:
-        # a query to increase the quantity of the item by quantity
-        query = ''
-        cursor.execute(query, itemID)
+        # increase the quantity of the item by quantity
+        upd = 'update item set quantityNum = quantityNum + %s where itemID = %s'
+        cursor.execute(upd, (quantity, itemID))
         conn.commit()
         cursor.close()
-        session.pop('itemID')
+        session.pop('donor')
         return render_template('person.html', success='Item added successfully!')
     else:
-        # a query to insert the item into the database
-        query = ''
-        cursor.execute(query, itemID)
-        # a query to insert the donation into the database
-        query = ''
-        cursor.execute(query, donor, itemID, quantity)
+        # insert the item into the database
+        ins = 'insert into item values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        cursor.execute(ins, (itemID, quantity, iDesc, color, 0, isNew, hasPieces, material, mainCategory, subCategory))
+        # insert the donation into the database
+        ins = 'insert into donatedby values(%s, %s, %s, %s)'
+        cursor.execute(ins, (itemID, donor, quantity, datetime.now()))
         conn.commit()
         cursor.close()
-        if hasPieces == 1:
+        if hasPieces == "1":
             session['itemID'] = itemID
             return render_template('item_added.html', itemID=itemID)
-        session.pop('itemID')
+        session.pop('donor')
         return render_template('person.html', success='Item added successfully!')
 
 @app.route('/add_pieces', methods=['GET','POST'])
@@ -277,12 +290,12 @@ def add_pieces():
         return render_template('item_added.html')
 
     cursor = conn.cursor()
-    # a query to Insert the piece into the database
-    query = ''
-    cursor.execute(query, (session['itemID'], pieceNum, pDesc, length, width, height, roomNum, shelfNum, pNotes))
+    # Insert the piece into the database
+    ins = 'insert into piece values(%s, %s, %s, %s, %s, %s, %s, %s, %s)'
+    cursor.execute(ins, (session['itemID'], pieceNum, pDesc, length, width, height, roomNum, shelfNum, pNotes))
     conn.commit()
     # a query to find the pieces of the item and their locations
-    query = ''
+    query = 'select * from piece where itemID = %s'
     cursor.execute(query, itemID)
     item = cursor.fetchall()
     cursor.close()
@@ -302,7 +315,7 @@ def end_adding_pieces():
 @app.route('/post', methods=['GET', 'POST'])
 def post():
     username = session['username']
-    cursor = conn.cursor();
+    cursor = conn.cursor()
     blog = request.form['blog']
     query = 'INSERT INTO blog (blog_post, username) VALUES(%s, %s)'
     cursor.execute(query, (blog, username))
@@ -326,7 +339,7 @@ def select_blogger():
 @app.route('/show_posts', methods=["GET", "POST"])
 def show_posts():
     poster = request.args['poster']
-    cursor = conn.cursor();
+    cursor = conn.cursor()
     query = 'SELECT ts, blog_post FROM blog WHERE username = %s ORDER BY ts DESC'
     cursor.execute(query, poster)
     data = cursor.fetchall()
