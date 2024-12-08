@@ -60,8 +60,8 @@ CREATE TABLE DonatedBy (
     userName VARCHAR(50) NOT NULL,
     quantityNum INT NOT NULL, -- Handle duplicate items
     donateDate DATE NOT NULL,
-    PRIMARY KEY (ItemID, userName),
-    FOREIGN KEY (ItemID) REFERENCES Item(ItemID),
+    PRIMARY KEY (ItemID, quantityNum, userName),
+    FOREIGN KEY (ItemID, quantityNum) REFERENCES Item(ItemID, quantityNum),
     FOREIGN KEY (userName) REFERENCES Person(userName)
 );
 
@@ -118,8 +118,8 @@ CREATE TABLE ItemIn (
     orderID INT NOT NULL,
     quantityNum INT NOT NULL, -- Handle duplicate items
     found BOOLEAN DEFAULT FALSE,
-    PRIMARY KEY (ItemID, orderID),
-    FOREIGN KEY (ItemID) REFERENCES Item(ItemID),
+    PRIMARY KEY (ItemID, quantityNum, orderID),
+    FOREIGN KEY (ItemID, quantityNum) REFERENCES Item(ItemID, quantityNum),
     FOREIGN KEY (orderID) REFERENCES Ordered(orderID)
 );
 
