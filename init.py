@@ -547,10 +547,12 @@ def user_orders():
     # Fetch all orders associated with the current user
     cursor = conn.cursor()
     query = '''
-        SELECT o.orderID, o.orderDate, o.orderNotes, o.supervisor, o.client
-        FROM Ordered o
-        LEFT JOIN Delivered d ON o.orderID = d.orderID
-        WHERE o.client = %s OR d.userName = %s
+    SELECT o.orderID, o.orderDate, o.orderNotes, o.supervisor, o.client, i.ItemID, i.quantityNum, i.status
+    FROM Ordered o
+    LEFT JOIN ItemIn i ON o.orderID = i.orderID
+    WHERE o.client = %s OR EXISTS (
+            SELECT 1 FROM Delivered d WHERE d.orderID = o.orderID AND d.userName = %s
+            )
     '''
     cursor.execute(query, (username, username))
     orders = cursor.fetchall()
