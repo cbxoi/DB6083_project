@@ -1,4 +1,3 @@
--- Delete all entities first
 Drop table if exists ItemIn;
 Drop table if exists Delivered;
 Drop table if exists Act;
@@ -14,8 +13,6 @@ Drop table if exists Person;
 Drop table if exists `Role`;
 
 
--- Create all entities
-
 CREATE TABLE Category (
     mainCategory VARCHAR(50) NOT NULL,
     subCategory VARCHAR(50) NOT NULL,
@@ -25,7 +22,7 @@ CREATE TABLE Category (
 
 CREATE TABLE Item (
     ItemID INT NOT NULL,
-    quantityNum INT NOT NULL, -- Handle duplicate items
+    quantityNum INT NOT NULL,
     iDescription TEXT,
     photo BLOB,
     color VARCHAR(20),
@@ -34,10 +31,9 @@ CREATE TABLE Item (
     material VARCHAR(50),
     mainCategory VARCHAR(50) NOT NULL,
     subCategory VARCHAR(50) NOT NULL,
-    PRIMARY KEY (ItemID, quantityNum), -- composite key
+    PRIMARY KEY (ItemID, quantityNum),
     FOREIGN KEY (mainCategory, subCategory) REFERENCES Category(mainCategory, subCategory)
 );
-
 
 CREATE TABLE Person (
     userName VARCHAR(50) NOT NULL,
@@ -58,7 +54,7 @@ CREATE TABLE PersonPhone (
 CREATE TABLE DonatedBy (
     ItemID INT NOT NULL,
     userName VARCHAR(50) NOT NULL,
-    quantityNum INT NOT NULL, -- Handle duplicate items
+    quantityNum INT NOT NULL,
     donateDate DATE NOT NULL,
     PRIMARY KEY (ItemID, quantityNum, userName),
     FOREIGN KEY (ItemID, quantityNum) REFERENCES Item(ItemID, quantityNum),
@@ -116,18 +112,20 @@ CREATE TABLE Ordered (
 CREATE TABLE ItemIn (
     ItemID INT NOT NULL,
     orderID INT NOT NULL,
-    quantityNum INT NOT NULL, -- Handle duplicate items
+    quantityNum INT NOT NULL,
     found BOOLEAN DEFAULT FALSE,
+    status ENUM('Available', 'Holding', 'Delivered') DEFAULT 'Available',
+    holdingLocationID INT,
     PRIMARY KEY (ItemID, quantityNum, orderID),
     FOREIGN KEY (ItemID, quantityNum) REFERENCES Item(ItemID, quantityNum),
-    FOREIGN KEY (orderID) REFERENCES Ordered(orderID)
+    FOREIGN KEY (orderID) REFERENCES Ordered(orderID),
+    FOREIGN KEY (holdingLocationID) REFERENCES Location(roomNum)
 );
-
 
 CREATE TABLE Delivered (
     userName VARCHAR(50) NOT NULL,
     orderID INT NOT NULL,
-    status VARCHAR(20) NOT NULL,
+    status ENUM('Pending', 'In Transit', 'Delivered', 'Cancelled') NOT NULL,
     date DATE NOT NULL,
     PRIMARY KEY (userName, orderID),
     FOREIGN KEY (userName) REFERENCES Person(userName),
