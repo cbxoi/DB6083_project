@@ -4,7 +4,7 @@
 Category(**mainCategory**, **subCategory**, catNotes)
 
 ### Item
-Item(**ItemID**, **quantityNum**, iDescription, photo, color, isNew, hasPieces, material, mainCategory, subCategory)  
+Item(**ItemID**, quantityNum, iDescription, photo, color, isNew, hasPieces, material, mainCategory, subCategory)
 Item(mainCategory, subCategory) REFERENCES Category(mainCategory, subCategory)
 
 ### Person
@@ -15,8 +15,8 @@ PersonPhone(**userName**, **phone**)
 PersonPhone(userName) REFERENCES Person(userName)
 
 ### DonatedBy
-DonatedBy(**ItemID**, **quantityNum**, **userName**, donateDate)  
-DonatedBy(ItemID, quantityNum) REFERENCES Item(ItemID, quantityNum)  
+DonatedBy(**ItemID**, quantityNum, **userName**, **donateDate**)  
+DonatedBy(ItemID) REFERENCES Item(ItemID)
 DonatedBy(userName) REFERENCES Person(userName)
 
 ### Role
@@ -41,8 +41,8 @@ Ordered(supervisor) REFERENCES Person(userName)
 Ordered(client) REFERENCES Person(userName)
 
 ### ItemIn
-ItemIn(**ItemID**, **quantityNum**, **orderID**, found, status, holdingRoomNum, holdingShelfNum)  
-ItemIn(ItemID, quantityNum) REFERENCES Item(ItemID, quantityNum)  
+ItemIn(**ItemID**, quantityNum, **orderID**, found, status, holdingRoomNum, holdingShelfNum)  
+ItemIn(ItemID) REFERENCES Item(ItemID)
 ItemIn(orderID) REFERENCES Ordered(orderID)  
 ItemIn(holdingRoomNum, holdingShelfNum) REFERENCES Location(roomNum, shelfNum)
 

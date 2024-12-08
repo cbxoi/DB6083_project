@@ -259,6 +259,9 @@ def add_item():
         # increase the quantity of the item by quantity
         upd = 'update item set quantityNum = quantityNum + %s where itemID = %s'
         cursor.execute(upd, (quantity, itemID))
+        # insert the donation into the database
+        ins = 'insert into donatedby values(%s, %s, %s, %s)'
+        cursor.execute(ins, (itemID, donor, quantity, datetime.now()))
         conn.commit()
         cursor.close()
         session.pop('donor')
