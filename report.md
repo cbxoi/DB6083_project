@@ -22,7 +22,45 @@ Our schemas are based on Project Schema-v2
 
 Due to the implement of Feature 12, we change the schemas as follows:
 
+##### Item
 
+Item(**ItemID**, quantityNum, iDescription, photo, color, isNew, hasPieces, material, mainCategory, subCategory)
+
+Item(mainCategory, subCategory) REFERENCES Category(mainCategory, subCategory)
+
+Add 'quantityNum' to it but not as a primary key.
+
+When the same item added to the database, we just increase its quantity.
+
+When donating, the staff will check if two items are the same so that they should have the same itemID.
+
+Here is an assumption: We just suppose that the same kind of pieces are stored in the same location. If they have different locations, we will face a complex dispatch problem when shopping and delivering.
+
+##### DonatedBy
+
+DonatedBy(**ItemID**, quantityNum, **userName**, **donateDate**)  
+
+DonatedBy(ItemID) REFERENCES Item(ItemID)
+
+DonatedBy(userName) REFERENCES Person(userName)
+
+Add 'quantityNum' to it but not as a primary key. Set 'donateDate' as a primary key.
+
+Because of the possible duplicated items, the same person might donate the same item in different date.
+
+We just add this record into 'Donatedby'. It has no effect on shopping.
+
+##### ItemIn
+
+ItemIn(**ItemID**, quantityNum, **orderID**, found, status, holdingRoomNum, holdingShelfNum)  
+
+ItemIn(ItemID) REFERENCES Item(ItemID)
+
+ItemIn(orderID) REFERENCES Ordered(orderID)  
+
+ItemIn(holdingRoomNum, holdingShelfNum) REFERENCES Location(roomNum, shelfNum)
+
+Add 'quantityNum' to it but not as a primary key.
 
 
 
@@ -96,8 +134,9 @@ select * from act where username = %s
 # add item
 # check if the item exists
 select * from item where itemID = %s
-# if it exists, update the quantity of the item
+# if it exists, update the quantity of this item
 update item set quantityNum = quantityNum + %s where itemID = %s
+insert into donatedby values(%s, %s, %s, %s)
 # if it doesn't exist, insert it into database
 insert into item values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 insert into donatedby values(%s, %s, %s, %s)
@@ -110,6 +149,10 @@ select * from piece where itemID = %s
 ```
 
 
+
+#### Difficulties
+
+1. We suppose that the same items are stored in the same location. It's known that in the real Logistics and transportation system, here's a dispatch problem. The system needs to choose a appropriate warehouse and assign a delivery for clients. But we can't handle this.
 
 
 
