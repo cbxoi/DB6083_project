@@ -22,9 +22,10 @@ VALUES
 
 INSERT INTO Item (ItemID, quantityNum, iDescription, photo, color, isNew, hasPieces, material, mainCategory, subCategory)
 VALUES
-    (1001, 1, 'Description for 1001', NULL, 'Red', 1, 0, 'Plastic', 'Toys', 'Building'),
-    (1002, 2, 'Description for 1002', NULL, 'Blue', 1, 0, 'Metal', 'Tools', 'Hand Tools'),
-    (1003, 3, 'Description for 1003', NULL, 'Green', 1, 0, 'Wood', 'Furniture', 'Chairs');
+    (1001, 1, 'Toy 1', NULL, 'Red', 1, 0, 'Plastic', 'Toys', 'Building'),
+    (1001, 2, 'Toy 2', NULL, 'Red', 1, 0, 'Plastic', 'Toys', 'Building'),
+    (1002, 2, 'Tool', NULL, 'Blue', 1, 0, 'Metal', 'Tools', 'Hand Tools'),
+    (1003, 3, 'Chair', NULL, 'Green', 1, 0, 'Wood', 'Furniture', 'Chairs');
 
 INSERT INTO Person (userName, password, fname, lname, email)
 VALUES
