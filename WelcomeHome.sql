@@ -53,8 +53,9 @@ CREATE TABLE PersonPhone (
 CREATE TABLE DonatedBy (
     ItemID INT NOT NULL,
     userName VARCHAR(50) NOT NULL,
+    quantityNum INT NOT NULL,
     donateDate DATE NOT NULL,
-    PRIMARY KEY (ItemID, userName),
+    PRIMARY KEY (ItemID, userName, donateDate),
     FOREIGN KEY (ItemID) REFERENCES Item(ItemID),
     FOREIGN KEY (userName) REFERENCES Person(userName)
 );
