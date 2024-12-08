@@ -12,7 +12,6 @@ Drop table if exists `Location`;
 Drop table if exists Person;
 Drop table if exists `Role`;
 
-
 CREATE TABLE Category (
     mainCategory VARCHAR(50) NOT NULL,
     subCategory VARCHAR(50) NOT NULL,
@@ -31,7 +30,7 @@ CREATE TABLE Item (
     material VARCHAR(50),
     mainCategory VARCHAR(50) NOT NULL,
     subCategory VARCHAR(50) NOT NULL,
-    PRIMARY KEY (ItemID),
+    PRIMARY KEY (ItemID), 
     FOREIGN KEY (mainCategory, subCategory) REFERENCES Category(mainCategory, subCategory)
 );
 
@@ -54,10 +53,9 @@ CREATE TABLE PersonPhone (
 CREATE TABLE DonatedBy (
     ItemID INT NOT NULL,
     userName VARCHAR(50) NOT NULL,
-    quantityNum INT NOT NULL,
     donateDate DATE NOT NULL,
     PRIMARY KEY (ItemID, userName),
-    FOREIGN KEY (ItemID, quantityNum) REFERENCES Item(ItemID, quantityNum),
+    FOREIGN KEY (ItemID) REFERENCES Item(ItemID),
     FOREIGN KEY (userName) REFERENCES Person(userName)
 );
 
@@ -77,7 +75,7 @@ CREATE TABLE Act (
 
 CREATE TABLE Location (
     roomNum INT NOT NULL,
-    shelfNum INT NOT NULL, 
+    shelfNum INT NOT NULL,
     shelf VARCHAR(20),
     shelfDescription VARCHAR(200),
     PRIMARY KEY (roomNum, shelfNum)
@@ -87,11 +85,11 @@ CREATE TABLE Piece (
     ItemID INT NOT NULL,
     pieceNum INT NOT NULL,
     pDescription VARCHAR(200),
-    length INT NOT NULL, 
+    length INT NOT NULL,
     width INT NOT NULL,
     height INT NOT NULL,
     roomNum INT NOT NULL,
-    shelfNum INT NOT NULL, 
+    shelfNum INT NOT NULL,
     pNotes TEXT,
     PRIMARY KEY (ItemID, pieceNum),
     FOREIGN KEY (ItemID) REFERENCES Item(ItemID),
@@ -115,14 +113,13 @@ CREATE TABLE ItemIn (
     quantityNum INT NOT NULL,
     found BOOLEAN DEFAULT FALSE,
     status ENUM('Available', 'Holding', 'Delivered') DEFAULT 'Available',
-    holdingRoomNum INT, 
-    holdingShelfNum INT, 
+    holdingRoomNum INT,
+    holdingShelfNum INT,
     PRIMARY KEY (ItemID, orderID),
-    FOREIGN KEY (ItemID, quantityNum) REFERENCES Item(ItemID, quantityNum),
+    FOREIGN KEY (ItemID) REFERENCES Item(ItemID),
     FOREIGN KEY (orderID) REFERENCES Ordered(orderID),
     FOREIGN KEY (holdingRoomNum, holdingShelfNum) REFERENCES Location(roomNum, shelfNum)
 );
-
 
 CREATE TABLE Delivered (
     userName VARCHAR(50) NOT NULL,
