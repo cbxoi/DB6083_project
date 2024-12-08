@@ -4,8 +4,7 @@
 Category(**mainCategory**, **subCategory**, catNotes)
 
 ### Item
-Item(**ItemID**, **quantityNum**, iDescription, photo, color, isNew, hasPieces, material, mainCategory, subCategory)
-
+Item(**ItemID**, **quantityNum**, iDescription, photo, color, isNew, hasPieces, material, mainCategory, subCategory)  
 Item(mainCategory, subCategory) REFERENCES Category(mainCategory, subCategory)
 
 ### Person
@@ -42,9 +41,10 @@ Ordered(supervisor) REFERENCES Person(userName)
 Ordered(client) REFERENCES Person(userName)
 
 ### ItemIn
-ItemIn(**ItemID**, **quantityNum**, **orderID**, found)  
+ItemIn(**ItemID**, **quantityNum**, **orderID**, found, status, holdingRoomNum, holdingShelfNum)  
 ItemIn(ItemID, quantityNum) REFERENCES Item(ItemID, quantityNum)  
-ItemIn(orderID) REFERENCES Ordered(orderID)
+ItemIn(orderID) REFERENCES Ordered(orderID)  
+ItemIn(holdingRoomNum, holdingShelfNum) REFERENCES Location(roomNum, shelfNum)
 
 ### Delivered
 Delivered(**userName**, **orderID**, status, date)  
