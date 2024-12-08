@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Orders</title>
+</head>
+<body>
+    <h1>Orders Associated with {{ username }}</h1>
+
+    {% if orders %}
+        <table border="1">
+            <tr>
+                <th>Order ID</th>
+                <th>Order Date</th>
+                <th>Order Notes</th>
+                <th>Supervisor</th>
+                <th>Client</th>
+            </tr>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.orderID }}</td>
+                <td>{{ order.orderDate }}</td>
+                <td>{{ order.orderNotes }}</td>
+                <td>{{ order.supervisor }}</td>
+                <td>{{ order.client }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No orders found for you.</p>
+    {% endif %}
+
+    <br>
+    <a href="/person">Back to Home</a>
+</body>
+</html>

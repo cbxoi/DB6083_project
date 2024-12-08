@@ -115,12 +115,14 @@ CREATE TABLE ItemIn (
     quantityNum INT NOT NULL,
     found BOOLEAN DEFAULT FALSE,
     status ENUM('Available', 'Holding', 'Delivered') DEFAULT 'Available',
-    holdingLocationID INT,
+    holdingRoomNum INT, 
+    holdingShelfNum INT, 
     PRIMARY KEY (ItemID, quantityNum, orderID),
     FOREIGN KEY (ItemID, quantityNum) REFERENCES Item(ItemID, quantityNum),
     FOREIGN KEY (orderID) REFERENCES Ordered(orderID),
-    FOREIGN KEY (holdingLocationID) REFERENCES Location(roomNum)
+    FOREIGN KEY (holdingRoomNum, holdingShelfNum) REFERENCES Location(roomNum, shelfNum)
 );
+
 
 CREATE TABLE Delivered (
     userName VARCHAR(50) NOT NULL,

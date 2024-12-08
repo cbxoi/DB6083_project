@@ -61,7 +61,9 @@ INSERT INTO Location (roomNum, shelfNum, shelf, shelfDescription)
 VALUES
     (1, 1, 'A1', 'Top shelf in room 1'),
     (1, 2, 'B1', 'Middle shelf in room 1'),
-    (2, 1, 'C1', 'Top shelf in room 2');
+    (2, 1, 'C1', 'Top shelf in room 2'),
+    (99, 1, 'Holding', 'Holding area for items ready for delivery');
+
 
 INSERT INTO Piece (ItemID, pieceNum, pDescription, length, width, height, roomNum, shelfNum, pNotes)
 VALUES
@@ -74,10 +76,10 @@ VALUES
     (1, '2024-10-05', 'Order for dining table', 'test1', 'test3'),
     (2, '2024-10-06', 'Order for office chair', 'test1', 'test3');
 
-INSERT INTO ItemIn (ItemID, orderID, quantityNum, found, status, holdingLocationID)
+INSERT INTO ItemIn (ItemID, orderID, quantityNum, found, status, holdingRoomNum, holdingShelfNum)
 VALUES
-    (1001, 1, 1, 0, 'Holding', 1),  
-    (1002, 2, 2, 1, 'Available', 2);  
+    (1001, 1, 1, 0, 'Holding', 99, 1),  
+    (1002, 2, 2, 1, 'Available', 2, 1);  
 
 INSERT INTO Delivered (userName, orderID, status, date)
 VALUES

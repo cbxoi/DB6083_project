@@ -4,6 +4,7 @@ from datetime import datetime
 from flask import Flask, render_template, request, session, url_for, redirect, flash
 import pymysql.cursors
 
+
 #for uploading photo:
 from app import app
 #from flask import Flask, flash, request, redirect, render_template
@@ -13,8 +14,8 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 
 ###Initialize the app from Flask
-##app = Flask(__name__)
-##app.secret_key = "secret key"
+app = Flask(__name__)
+app.secret_key = "secret key"
 
 #Configure MySQL
 conn = pymysql.connect(host='localhost',
@@ -366,11 +367,11 @@ def show_posts():
 def allowed_file(filename):
 	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 	
-@app.route('/')
+@app.route('/upload_form', methods=['GET'])
 def upload_form():
-	return render_template('upload.html')
+    return render_template('upload.html')
 
-@app.route('/', methods=['POST'])
+@app.route('/upload_file', methods=['POST'])
 def upload_file():
 	if request.method == 'POST':
         # check if the post request has the file part
@@ -396,10 +397,184 @@ def upload_file():
 def logout():
     session.pop('username')
     return redirect('/')
-        
+
+
+#------------------------------------------------------------------------------
+#feature 7
+@app.route('/prepare_order', methods=['GET', 'POST'])
+def prepare_order():
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+        # Collect form data
+        client_username = request.form.get('username')
+        order_id = request.form.get('orderID')
+        room_number = request.form.get('roomNumber')
+        shelf_number = request.form.get('shelfNumber')
+
+        # **Search Operation**
+        if client_username or (order_id and not room_number):
+            if client_username:
+                # Search orders by username
+                query = '''
+                    SELECT o.orderID, o.orderDate, o.orderNotes
+                    FROM Ordered o
+                    JOIN Person p ON o.client = p.userName
+                    WHERE p.userName = %s
+                '''
+                cursor.execute(query, (client_username,))
+                orders = cursor.fetchall()
+
+                if not orders:
+                    return render_template('prepare_order.html', error=f"No orders found for client {client_username}.")
+                
+                return render_template('prepare_order.html', orders=orders)
+
+            elif order_id:
+                # Search orders by order ID
+                query = 'SELECT * FROM Ordered WHERE orderID = %s'
+                cursor.execute(query, (order_id,))
+                order = cursor.fetchone()
+
+                if not order:
+                    return render_template('prepare_order.html', error=f"Order ID {order_id} does not exist.")
+                
+                item_query = '''
+                    SELECT i.ItemID, i.quantityNum, i.status, l.roomNum, l.shelfNum, l.shelfDescription
+                    FROM ItemIn i
+                    LEFT JOIN Location l ON i.holdingRoomNum = l.roomNum AND i.holdingShelfNum = l.shelfNum
+                    WHERE i.orderID = %s
+                '''
+                cursor.execute(item_query, (order_id,))
+                items = cursor.fetchall()
+
+                return render_template('prepare_order.html', order=order, items=items)
+
+        # **Update Location Operation**
+        if order_id and room_number:
+            try:
+                # Ensure location exists in the Location table
+                location_check_query = '''
+                    SELECT COUNT(*) AS count FROM Location WHERE roomNum = %s AND shelfNum = %s
+                '''
+                cursor.execute(location_check_query, (room_number, shelf_number))
+                location_exists = cursor.fetchone()['count']
+
+                if not location_exists:
+                    # Insert new location if it doesn't exist
+                    insert_location_query = '''
+                        INSERT INTO Location (roomNum, shelfNum, shelf, shelfDescription)
+                        VALUES (%s, %s, %s, %s)
+                    '''
+                    cursor.execute(insert_location_query, (room_number, shelf_number, 'Holding', 'Holding area for ready items'))
+                    conn.commit()
+
+                # Update item location and status
+                if int(room_number) == 99:
+                    update_query = '''
+                        UPDATE ItemIn
+                        SET status = 'Holding', holdingRoomNum = %s, holdingShelfNum = %s
+                        WHERE orderID = %s AND status = 'Available'
+                    '''
+                else:
+                    update_query = '''
+                        UPDATE ItemIn
+                        SET status = 'Available', holdingRoomNum = %s, holdingShelfNum = %s
+                        WHERE orderID = %s
+                    '''
+                cursor.execute(update_query, (room_number, shelf_number, order_id))
+                conn.commit()
+
+                # Fetch updated data
+                item_query = '''
+                    SELECT i.ItemID, i.quantityNum, i.status, l.roomNum, l.shelfNum, l.shelfDescription
+                    FROM ItemIn i
+                    LEFT JOIN Location l ON i.holdingRoomNum = l.roomNum AND i.holdingShelfNum = l.shelfNum
+                    WHERE i.orderID = %s
+                '''
+                cursor.execute(item_query, (order_id,))
+                items = cursor.fetchall()
+
+                query = 'SELECT * FROM Ordered WHERE orderID = %s'
+                cursor.execute(query, (order_id,))
+                order = cursor.fetchone()
+
+                return render_template('prepare_order.html', success=f"Order {order_id} updated with Room {room_number} and Shelf {shelf_number}.", order=order, items=items)
+
+            except Exception as e:
+                conn.rollback()
+                print(f"Error updating order: {e}")
+                return render_template('prepare_order.html', error="An error occurred while updating the order. Please try again.")
+
+        # If neither a search nor update, return an error
+        return render_template('prepare_order.html', error="Room number and shelf number are required to update location.")
+
+    # **Handle GET Requests**
+    # If GET and `orderID` is provided in the query string, display order details
+    order_id = request.args.get('orderID')
+    if order_id:
+        query = 'SELECT * FROM Ordered WHERE orderID = %s'
+        cursor.execute(query, (order_id,))
+        order = cursor.fetchone()
+
+        if order:
+            item_query = '''
+                SELECT i.ItemID, i.quantityNum, i.status, l.roomNum, l.shelfNum, l.shelfDescription
+                FROM ItemIn i
+                LEFT JOIN Location l ON i.holdingRoomNum = l.roomNum AND i.holdingShelfNum = l.shelfNum
+                WHERE i.orderID = %s
+            '''
+            cursor.execute(item_query, (order_id,))
+            items = cursor.fetchall()
+
+            return render_template('prepare_order.html', order=order, items=items)
+
+    return render_template('prepare_order.html')
+
+
+#------------------------------------------------------------------------------
+#feature 8
+@app.route('/user_orders', methods=['GET'])
+def user_orders():
+    # Get the current logged-in user
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('login'))
+
+    # Fetch all orders associated with the current user
+    cursor = conn.cursor()
+    query = '''
+        SELECT o.orderID, o.orderDate, o.orderNotes, o.supervisor, o.client
+        FROM Ordered o
+        LEFT JOIN Delivered d ON o.orderID = d.orderID
+        WHERE o.client = %s OR d.userName = %s
+    '''
+    cursor.execute(query, (username, username))
+    orders = cursor.fetchall()
+    cursor.close()
+
+    # Render the results
+    return render_template('user_orders.html', orders=orders, username=username)
+
+
+
+
+
+print(app.url_map)
+
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000
 #debug = True -> you don't have to restart flask
 #for changes to go through, TURN OFF FOR PRODUCTION
 if __name__ == "__main__":
     app.run('127.0.0.1', 5000, debug = True)
+
+
+
+
+
+
+
+
+
+
