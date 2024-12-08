@@ -31,7 +31,7 @@ CREATE TABLE Item (
     material VARCHAR(50),
     mainCategory VARCHAR(50) NOT NULL,
     subCategory VARCHAR(50) NOT NULL,
-    PRIMARY KEY (ItemID, quantityNum),
+    PRIMARY KEY (ItemID),
     FOREIGN KEY (mainCategory, subCategory) REFERENCES Category(mainCategory, subCategory)
 );
 
@@ -56,7 +56,7 @@ CREATE TABLE DonatedBy (
     userName VARCHAR(50) NOT NULL,
     quantityNum INT NOT NULL,
     donateDate DATE NOT NULL,
-    PRIMARY KEY (ItemID, quantityNum, userName),
+    PRIMARY KEY (ItemID, userName),
     FOREIGN KEY (ItemID, quantityNum) REFERENCES Item(ItemID, quantityNum),
     FOREIGN KEY (userName) REFERENCES Person(userName)
 );
@@ -117,7 +117,7 @@ CREATE TABLE ItemIn (
     status ENUM('Available', 'Holding', 'Delivered') DEFAULT 'Available',
     holdingRoomNum INT, 
     holdingShelfNum INT, 
-    PRIMARY KEY (ItemID, quantityNum, orderID),
+    PRIMARY KEY (ItemID, orderID),
     FOREIGN KEY (ItemID, quantityNum) REFERENCES Item(ItemID, quantityNum),
     FOREIGN KEY (orderID) REFERENCES Ordered(orderID),
     FOREIGN KEY (holdingRoomNum, holdingShelfNum) REFERENCES Location(roomNum, shelfNum)
