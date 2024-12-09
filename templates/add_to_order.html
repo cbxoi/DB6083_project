@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add to Order</title>
+    <link rel="stylesheet" type="text/css" href="/static/styles.css">
+</head>
+<body>
+    <h1>Add Items to Order</h1>
+
+    {% if error %}
+        <p class="error" style="color: red;"><strong>Error:</strong> {{ error }}</p>
+    {% endif %}
+    {% if success %}
+        <p class="success" style="color: green;"><strong>Success:</strong> {{ success }}</p>
+    {% endif %}
+
+   <form method="GET" action="/add_to_order">
+    <label for="category">Category:</label>
+    <select id="category" name="category" required>
+        {% if category_map %}
+            {% for main_category, subcategories in category_map.items() %}
+                <option disabled>{{ main_category }}</option>
+                {% for subcategory in subcategories %}
+                    <option value="{{ main_category }}|{{ subcategory }}">
+                        {{ main_category }} - {{ subcategory }}
+                    </option>
+                {% endfor %}
+            {% endfor %}
+        {% else %}
+            <option disabled>No categories available</option>
+        {% endif %}
+    </select>
+    <button type="submit">Filter Items</button>
+   </form>
+
+    {% if items %}
+        <h2>Available Items in Category: {{ selected_category }}</h2>
+        <form method="POST">
+            <table border="1">
+                <tr>
+                    <th>Item ID</th>
+                    <th>Description</th>
+                    <th>Available Quantity</th>
+                    <th>Add Quantity</th>
+                    <th>Action</th>
+                </tr>
+                {% for item in items %}
+                    <tr>
+                        <td>{{ item['ItemID'] }}</td>
+                        <td>{{ item['iDescription'] }}</td>
+                        <td>{{ item['quantityNum'] }}</td>
+                        <td>
+                            <input type="number" name="quantity" min="1" max="{{ item['quantityNum'] }}" required>
+                            <input type="hidden" name="item_id" value="{{ item['ItemID'] }}">
+                        </td>
+                        <td>
+                            <button type="submit">Add to Order</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </form>
+    {% endif %}
+
+    <br>
+    <a href="/person">Back to Home</a>
+</body>
+</html>

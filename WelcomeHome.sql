@@ -57,7 +57,7 @@ CREATE TABLE DonatedBy (
     quantityNum INT NOT NULL,
     donateDate DATE NOT NULL,
     PRIMARY KEY (ItemID, quantityNum, userName),
-    FOREIGN KEY (ItemID, quantityNum) REFERENCES Item(ItemID, quantityNum),
+    FOREIGN KEY (ItemID) REFERENCES Item(ItemID),
     FOREIGN KEY (userName) REFERENCES Person(userName)
 );
 
@@ -118,7 +118,7 @@ CREATE TABLE ItemIn (
     holdingRoomNum INT, 
     holdingShelfNum INT, 
     PRIMARY KEY (ItemID, quantityNum, orderID),
-    FOREIGN KEY (ItemID, quantityNum) REFERENCES Item(ItemID, quantityNum),
+    FOREIGN KEY (ItemID) REFERENCES Item(ItemID),
     FOREIGN KEY (orderID) REFERENCES Ordered(orderID),
     FOREIGN KEY (holdingRoomNum, holdingShelfNum) REFERENCES Location(roomNum, shelfNum)
 );

@@ -1,0 +1,17 @@
+select {
+    width: 300px;
+    height: 40px;
+    font-size: 16px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+select:hover {
+    border-color: #888;
+}
+
+option {
+    font-size: 16px;
+    padding: 5px;
+}

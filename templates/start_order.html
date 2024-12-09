@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Start Order</title>
+</head>
+<body>
+    <h1>Start an Order</h1>
+
+    {% if error %}
+        <p class="error" style="color: red;"><strong>Error:</strong> {{ error }}</p>
+    {% endif %}
+    {% if success %}
+        <p class="success" style="color: green;"><strong>Success:</strong> {{ success }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <label for="client_username">Client Username:</label>
+        <input type="text" id="client_username" name="client_username" required>
+        <button type="submit">Start Order</button>
+    </form>
+
+    <br>
+    <a href="/person">Back to Home</a>
+</body>
+</html>
