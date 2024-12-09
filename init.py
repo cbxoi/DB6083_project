@@ -303,7 +303,7 @@ def add_item():
         cursor.execute(ins, (itemID, donor, quantity, datetime.now()))
         conn.commit()
         cursor.close()
-        # if the item has pieces, set the session and enter 'add_pieces' page
+        # if the item has pieces, set the session as True
         if hasPieces == "1":
             session["itemID"] = itemID
             return render_template("item_added.html", itemID=itemID)
@@ -374,10 +374,15 @@ def add_pieces():
 # end adding pieces and return to home page
 @app.route("/end_adding_pieces", methods=["GET"])
 def end_adding_pieces():
-    # remove the session
-    session.pop("itemID")
-    session.pop("donor")
-    return render_template("person.html", success="Item added successfully!")
+    if session['pieceNum'] == 0:
+        flash('Please add at least one piece')
+        return render_template('item_added.html', itemID=session['itemID'])
+    #remove the session
+    session.pop('hasPieces')
+    session.pop('itemID')
+    session.pop('pieceNum')
+    session.pop('donor')
+    return render_template('person.html', success='Item added successfully!')
 
 
 # ------------------------------------------------------------------------------
@@ -644,160 +649,110 @@ def add_to_order():
 
 # ------------------------------------------------------------------------------
 # feature 7
-@app.route("/prepare_order", methods=["GET", "POST"])
+@app.route('/prepare_order', methods=['GET', 'POST'])
 def prepare_order():
     cursor = conn.cursor()
 
-    if request.method == "POST":
+    if request.method == 'POST':
         # Collect form data
-        client_username = request.form.get("username")
-        order_id = request.form.get("orderID")
-        room_number = request.form.get("roomNumber")
-        shelf_number = request.form.get("shelfNumber")
+        order_id = request.form.get('orderID')
+        item_id = request.form.get('ItemID')
+        quantity_num = request.form.get('quantityNum')
+        room_number = request.form.get('roomNumber')
+        shelf_number = request.form.get('shelfNumber')
+        client_username = request.form.get('username')
 
-        # **Search Operation**
-        if client_username or (order_id and not room_number):
-            if client_username:
-                # Search orders by username
-                query = """
-                    SELECT o.orderID, o.orderDate, o.orderNotes
-                    FROM Ordered o
-                    JOIN Person p ON o.client = p.userName
-                    WHERE p.userName = %s
-                """
-                cursor.execute(query, (client_username,))
-                orders = cursor.fetchall()
+        # Search by Client Username
+        if client_username and not order_id:
+            query = '''
+                SELECT o.orderID, o.orderDate, o.orderNotes
+                FROM Ordered o
+                JOIN Person p ON o.client = p.userName
+                WHERE p.userName = %s
+            '''
+            cursor.execute(query, (client_username,))
+            orders = cursor.fetchall()
 
-                if not orders:
-                    return render_template(
-                        "prepare_order.html",
-                        error=f"No orders found for client {client_username}.",
-                    )
+            if not orders:
+                return render_template('prepare_order.html', error=f"No orders found for client {client_username}.")
+            return render_template('prepare_order.html', orders=orders)
 
-                return render_template("prepare_order.html", orders=orders)
-
-            elif order_id:
-                # Search orders by order ID
-                query = "SELECT * FROM Ordered WHERE orderID = %s"
+        # Search by Order ID or Update Location
+        if order_id:
+            if not room_number:  # Search order details
+                query = 'SELECT * FROM Ordered WHERE orderID = %s'
                 cursor.execute(query, (order_id,))
                 order = cursor.fetchone()
 
                 if not order:
-                    return render_template(
-                        "prepare_order.html",
-                        error=f"Order ID {order_id} does not exist.",
-                    )
+                    return render_template('prepare_order.html', error=f"Order ID {order_id} does not exist.")
 
-                item_query = """
+                item_query = '''
                     SELECT i.ItemID, i.quantityNum, i.status, l.roomNum, l.shelfNum, l.shelfDescription
                     FROM ItemIn i
                     LEFT JOIN Location l ON i.holdingRoomNum = l.roomNum AND i.holdingShelfNum = l.shelfNum
                     WHERE i.orderID = %s
-                """
+                    ORDER BY i.ItemID, i.quantityNum
+                '''
                 cursor.execute(item_query, (order_id,))
                 items = cursor.fetchall()
 
-                return render_template("prepare_order.html", order=order, items=items)
+                return render_template('prepare_order.html', order=order, items=items)
 
-        # **Update Location Operation**
-        if order_id and room_number:
-            try:
-                # Ensure location exists in the Location table
-                location_check_query = """
-                    SELECT COUNT(*) AS count FROM Location WHERE roomNum = %s AND shelfNum = %s
-                """
-                cursor.execute(location_check_query, (room_number, shelf_number))
-                location_exists = cursor.fetchone()["count"]
+            elif item_id and quantity_num:  # Update location for specific quantityNum
+                try:
+                    location_check_query = '''
+                        SELECT COUNT(*) AS count FROM Location WHERE roomNum = %s AND shelfNum = %s
+                    '''
+                    cursor.execute(location_check_query, (room_number, shelf_number))
+                    location_exists = cursor.fetchone()['count']
 
-                if not location_exists:
-                    # Insert new location if it doesn't exist
-                    insert_location_query = """
-                        INSERT INTO Location (roomNum, shelfNum, shelf, shelfDescription)
-                        VALUES (%s, %s, %s, %s)
-                    """
-                    cursor.execute(
-                        insert_location_query,
-                        (
-                            room_number,
-                            shelf_number,
-                            "Holding",
-                            "Holding area for ready items",
-                        ),
-                    )
+                    if not location_exists:
+                        insert_location_query = '''
+                            INSERT INTO Location (roomNum, shelfNum, shelf, shelfDescription)
+                            VALUES (%s, %s, %s, %s)
+                        '''
+                        cursor.execute(insert_location_query, (room_number, shelf_number, 'Updated', 'Updated location'))
+                        conn.commit()
+
+                    # Determine the status based on the room number
+                    if int(room_number) == 99:  # If moving to holding room
+                        new_status = 'Holding'
+                    else:  # If moving to any other room
+                        new_status = 'Available'
+
+                    # Update the location and status of the specific quantityNum
+                    update_query = '''
+                        UPDATE ItemIn
+                        SET holdingRoomNum = %s, holdingShelfNum = %s, status = %s
+                        WHERE orderID = %s AND ItemID = %s AND quantityNum = %s
+                    '''
+                    cursor.execute(update_query, (room_number, shelf_number, new_status, order_id, item_id, quantity_num))
                     conn.commit()
 
-                # Update item location and status
-                if int(room_number) == 99:
-                    update_query = """
-                        UPDATE ItemIn
-                        SET status = 'Holding', holdingRoomNum = %s, holdingShelfNum = %s
-                        WHERE orderID = %s AND status = 'Available'
-                    """
-                else:
-                    update_query = """
-                        UPDATE ItemIn
-                        SET status = 'Available', holdingRoomNum = %s, holdingShelfNum = %s
-                        WHERE orderID = %s
-                    """
-                cursor.execute(update_query, (room_number, shelf_number, order_id))
-                conn.commit()
+                    # Fetch updated data
+                    item_query = '''
+                        SELECT i.ItemID, i.quantityNum, i.status, l.roomNum, l.shelfNum, l.shelfDescription
+                        FROM ItemIn i
+                        LEFT JOIN Location l ON i.holdingRoomNum = l.roomNum AND i.holdingShelfNum = l.shelfNum
+                        WHERE i.orderID = %s
+                        ORDER BY i.ItemID, i.quantityNum
+                    '''
+                    cursor.execute(item_query, (order_id,))
+                    items = cursor.fetchall()
 
-                # Fetch updated data
-                item_query = """
-                    SELECT i.ItemID, i.quantityNum, i.status, l.roomNum, l.shelfNum, l.shelfDescription
-                    FROM ItemIn i
-                    LEFT JOIN Location l ON i.holdingRoomNum = l.roomNum AND i.holdingShelfNum = l.shelfNum
-                    WHERE i.orderID = %s
-                """
-                cursor.execute(item_query, (order_id,))
-                items = cursor.fetchall()
+                    query = 'SELECT * FROM Ordered WHERE orderID = %s'
+                    cursor.execute(query, (order_id,))
+                    order = cursor.fetchone()
 
-                query = "SELECT * FROM Ordered WHERE orderID = %s"
-                cursor.execute(query, (order_id,))
-                order = cursor.fetchone()
+                    return render_template('prepare_order.html', success=f"Quantity {quantity_num} of Item {item_id} updated.", order=order, items=items)
 
-                return render_template(
-                    "prepare_order.html",
-                    success=f"Order {order_id} updated with Room {room_number} and Shelf {shelf_number}.",
-                    order=order,
-                    items=items,
-                )
+                except Exception as e:
+                    conn.rollback()
+                    print(f"Error updating order: {e}")
+                    return render_template('prepare_order.html', error="An error occurred while updating the order. Please try again.")
+    return render_template('prepare_order.html')
 
-            except Exception as e:
-                conn.rollback()
-                print(f"Error updating order: {e}")
-                return render_template(
-                    "prepare_order.html",
-                    error="An error occurred while updating the order. Please try again.",
-                )
-
-        # If neither a search nor update, return an error
-        return render_template(
-            "prepare_order.html",
-            error="Room number and shelf number are required to update location.",
-        )
-
-    # **Handle GET Requests**
-    # If GET and `orderID` is provided in the query string, display order details
-    order_id = request.args.get("orderID")
-    if order_id:
-        query = "SELECT * FROM Ordered WHERE orderID = %s"
-        cursor.execute(query, (order_id,))
-        order = cursor.fetchone()
-
-        if order:
-            item_query = """
-                SELECT i.ItemID, i.quantityNum, i.status, l.roomNum, l.shelfNum, l.shelfDescription
-                FROM ItemIn i
-                LEFT JOIN Location l ON i.holdingRoomNum = l.roomNum AND i.holdingShelfNum = l.shelfNum
-                WHERE i.orderID = %s
-            """
-            cursor.execute(item_query, (order_id,))
-            items = cursor.fetchall()
-
-            return render_template("prepare_order.html", order=order, items=items)
-
-    return render_template("prepare_order.html")
 
 
 # ------------------------------------------------------------------------------

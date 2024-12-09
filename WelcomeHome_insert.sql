@@ -89,6 +89,7 @@ VALUES
 INSERT INTO ItemIn (ItemID, orderID, quantityNum, found, status, holdingRoomNum, holdingShelfNum)
 VALUES
     (1001, 1, 1, 0, 'Holding', 99, 1),  
+    (1002, 2, 1, 1, 'Available', 2, 1),
     (1002, 2, 2, 1, 'Available', 2, 1),
     (1004, 3, 2, 1, 'Available', 2, 1),
     (1005, 3, 2, 1, 'Available', 2, 1);
