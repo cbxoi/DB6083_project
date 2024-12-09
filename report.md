@@ -188,16 +188,6 @@ select * from piece where itemID = %s
 
 **Feature 7:**
 ```sql
-# Check current location and status of the item
-SELECT holdingRoomNum, status 
-FROM ItemIn 
-WHERE orderID = %s AND ItemID = %s AND quantityNum = %s
-
-# Update item location and status
-UPDATE ItemIn
-SET holdingRoomNum = %s, holdingShelfNum = %s, status = %s
-WHERE orderID = %s AND ItemID = %s AND quantityNum = %s
-
 # Search by Client Username
 SELECT o.orderID, o.orderDate, o.orderNotes
 FROM Ordered o
@@ -212,6 +202,23 @@ SELECT i.ItemID, i.quantityNum, i.status, l.roomNum, l.shelfNum, l.shelfDescript
 FROM ItemIn i
 LEFT JOIN Location l ON i.holdingRoomNum = l.roomNum AND i.holdingShelfNum = l.shelfNum
 WHERE i.orderID = %s
+
+# Check current location and status of the item
+SELECT holdingRoomNum, status 
+FROM ItemIn 
+WHERE orderID = %s AND ItemID = %s AND quantityNum = %s
+
+# Update item location and status
+UPDATE ItemIn
+SET holdingRoomNum = %s, holdingShelfNum = %s, status = %s
+WHERE orderID = %s AND ItemID = %s AND quantityNum = %s
+
+# Fetch updated data
+SELECT i.ItemID, i.quantityNum, i.status, l.roomNum, l.shelfNum, l.shelfDescription
+FROM ItemIn i
+LEFT JOIN Location l ON i.holdingRoomNum = l.roomNum AND i.holdingShelfNum = l.shelfNum
+WHERE i.orderID = %s
+ORDER BY i.ItemID, i.quantityNum
 
 ```
 
@@ -231,7 +238,8 @@ WHERE o.client = %s OR EXISTS (
 #### Difficulties
 
 1. We suppose that the same items are stored in the same location. It's known that in the real Logistics and transportation system, here`s a dispatch problem. The system needs to choose a appropriate warehouse and assign a delivery for clients. But we cant handle this.
-1. We haven't implement photo uploading. we don't know how to handle them with the database.
+2. We haven't implement photo uploading. we don't know how to handle them with the database.
+3. We only used one branch to commit, so the changes for each person is hard to track since if one keeps commiting, one will have to fetch from origin first but there are changes in the file. One of us accidentally pulled from origin and lost the recent worl, so we had to write the code again. A big lesson learned is to create different branches and keep commiting for record. Then we can merge to main branch at the end. 
 
 
 
