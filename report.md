@@ -139,8 +139,7 @@ insert into act values(%s, %s)
 
 **Feature 2:**
 
-```
-sql
+```sql
 # find item
 select * from piece where itemID = %s
 ```
@@ -149,8 +148,7 @@ select * from piece where itemID = %s
 
 **Feature 3:**
 
-```
-sql
+```sql
 # find order
 # select items from the order
 select * from ItemIn where orderID = %s
@@ -227,6 +225,8 @@ WHERE o.client = %s OR EXISTS (
         SELECT 1 FROM Delivered d WHERE d.orderID = o.orderID AND d.userName = %s
         )
 ```
+
+
 
 #### Difficulties
 
