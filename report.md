@@ -10,9 +10,9 @@
 
 **Languages:** Python, SQL, HTML
 
-**framework:** Flask, Jinja2
+**Framework:** Flask, Jinja2
 
-**feature chosen:** 5, 6, 7, 8, 12
+**Features chosen:** 5, 6, 7, 8, 12
 
 
 
@@ -94,8 +94,9 @@ date DATE NOT NULL
 
 Added `status` 
 
-
 <br>
+
+
 
 
 ### Pages:
@@ -139,16 +140,12 @@ insert into PersonPhone values(%s, %s)
 insert into act values(%s, %s)
 ```
 
-
-
 **Feature 2:**
 
 ```sql
 # find item
 select * from piece where itemID = %s
 ```
-
-
 
 **Feature 3:**
 
@@ -230,6 +227,7 @@ WHERE i.mainCategory = %s AND i.subCategory = %s AND i.quantityNum > 0
 ```
 
 **Feature 7:**
+
 ```sql
 # Search by Client Username
 SELECT o.orderID, o.orderDate, o.orderNotes
@@ -282,7 +280,7 @@ WHERE o.client = %s OR EXISTS (
 
 1. We suppose that the same items are stored in the same location. It's known that in the real Logistics and transportation system, here`s a dispatch problem. The system needs to choose a appropriate warehouse and assign a delivery for clients. But we cant handle this.
 2. We haven't implement photo uploading. we don't know how to handle them with the database.
-3. We only used one branch to commit, so the changes for each person is hard to track since if one keeps commiting, one will have to fetch from origin first but there are changes in the file. One of us accidentally pulled from origin and lost the recent worl, so we had to write the code again. A big lesson learned is to create different branches and keep commiting for record. Then we can merge to main branch at the end. 
+3. We only used one branch to commit, so the changes for each person is hard to track since if one keeps committing, one will have to fetch from origin first but there are changes in the file. One of us accidentally pulled from origin and lost the recent worl, so we had to write the code again. A big lesson learned is to create different branches and keep committing for record. Then we can merge to main branch at the end. 
 
 
 
