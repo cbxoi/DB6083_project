@@ -20,8 +20,8 @@
                 <td>{{ order.orderID }}</td>
                 <td>{{ order.orderDate }}</td>
                 <td>{{ order.orderNotes }}</td>
-                <td>{{ order.supervisor }}</td>
-                <td>{{ order.client }}</td>
+                <td>{{ order.supervisor or 'N/A' }}</td>
+                <td>{{ order.client or 'N/A' }}</td>
             </tr>
             {% endfor %}
         </table>
