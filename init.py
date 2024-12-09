@@ -277,11 +277,14 @@ def add_item():
         cursor.close()
         # if the item has pieces, set the session and enter 'add_pieces' page
         if hasPieces == "1":
-            session['itemID'] = itemID
-            return render_template('item_added.html', itemID=itemID)
-        # remove the session
-        session.pop('donor')
-        return render_template('person.html', success='Item added successfully!')
+            flash('Please add all pieces')
+            session['hasPieces'] = True
+        else:
+            flash('Just one piece is enough')
+            session['hasPieces'] = False
+        session['itemID'] = itemID
+        session['pieceNum'] = 1
+        return render_template('item_added.html', itemID=itemID)
 
 #feature 4
 #this action is in item_added.html
@@ -299,10 +302,14 @@ def add_pieces():
     shelfNum = request.form['shelfNum']
     pNotes = request.form['pNotes']
 
+    has_pieces = session['hasPieces']
+
     # check if all fields are filled
     if not pieceNum or not pDesc or not length or not width or not height or not roomNum or not shelfNum:
         flash('Please fill out all fields')
-        return render_template('item_added.html')
+        return render_template('item_added.html', itemID=itemID)
+    
+    session['pieceNum'] += 1
 
     cursor = conn.cursor()
     # Insert the piece into the database
@@ -316,6 +323,9 @@ def add_pieces():
     item = cursor.fetchall()
     cursor.close()
     flash('Piece added successfully')
+
+    if not has_pieces:
+        return render_template('Person.html', success='Item added successfully!')
     return render_template('item_added.html', itemID=itemID, item=item)
 
 #feature 4
@@ -323,7 +333,11 @@ def add_pieces():
 #end adding pieces and return to home page
 @app.route('/end_adding_pieces', methods=['GET'])
 def end_adding_pieces():
+    if session['pieceNum'] == 0:
+        flash('Please add at least one piece')
+        return render_template('item_added.html', itemID=session['itemID'])
     #remove the session
+    session.pop('hasPieces')
     session.pop('itemID')
     session.pop('donor')
     return render_template('person.html', success='Item added successfully!')
