@@ -526,9 +526,7 @@ def start_order():
 
 
 # ------------------------------------------------------------------------------
-# feature 6
-
-
+# Feature 6: Add to Order
 @app.route("/add_to_order", methods=["GET", "POST"])
 def add_to_order():
     error = None
@@ -591,17 +589,36 @@ def add_to_order():
                 error = "Not enough stock available."
             else:
                 cursor.execute(
+                    "SELECT quantityNum FROM ItemIn WHERE ItemID = %s AND orderID = %s",
+                    (item_id, session["current_order"]),
+                )
+                existing_item = cursor.fetchone()
+
+                if existing_item:
+                    cursor.execute(
+                        "UPDATE ItemIn SET quantityNum = quantityNum + %s WHERE ItemID = %s AND orderID = %s",
+                        (requested_quantity, item_id, session["current_order"]),
+                    )
+                    print(f"Updated existing ItemIn entry for ItemID {item_id}.")
+                else:
+                    cursor.execute(
+                        "INSERT INTO ItemIn (ItemID, orderID, quantityNum, found, status) VALUES (%s, %s, %s, FALSE, 'Holding')",
+                        (item_id, session["current_order"], requested_quantity),
+                    )
+                    print(f"Inserted new ItemIn entry for ItemID {item_id}.")
+
+                cursor.execute(
                     "UPDATE Item SET quantityNum = quantityNum - %s WHERE ItemID = %s",
                     (requested_quantity, item_id),
                 )
-                cursor.execute(
-                    "INSERT INTO ItemIn (ItemID, orderID, quantityNum, found, status) VALUES (%s, %s, %s, FALSE, 'Holding')",
-                    (item_id, session["current_order"], requested_quantity),
+                print(
+                    f"Updated stock for ItemID {item_id} by reducing {requested_quantity}."
                 )
                 conn.commit()
                 success = f"Added {requested_quantity} of Item #{item_id} to the order."
 
-            if main_category and sub_category:
+        if main_category and sub_category:
+            with conn.cursor() as cursor:
                 cursor.execute(
                     """
                     SELECT i.ItemID, i.iDescription, i.quantityNum
