@@ -231,10 +231,11 @@ WHERE o.client = %s OR EXISTS (
 #### Difficulties
 
 1. We suppose that the same items are stored in the same location. It's known that in the real Logistics and transportation system, here`s a dispatch problem. The system needs to choose a appropriate warehouse and assign a delivery for clients. But we cant handle this.
+1. We haven't implement photo uploading. we don't know how to handle them with the database.
 
 
 
-#### Division of Labor
+#### Division of Work
 
 **Buxiao Chu**
 

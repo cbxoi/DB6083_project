@@ -275,7 +275,7 @@ def add_item():
         cursor.execute(ins, (itemID, donor, quantity, datetime.now()))
         conn.commit()
         cursor.close()
-        # if the item has pieces, set the session and enter 'add_pieces' page
+        # if the item has pieces, set the session as True
         if hasPieces == "1":
             flash('Please add all pieces')
             session['hasPieces'] = True
@@ -339,6 +339,7 @@ def end_adding_pieces():
     #remove the session
     session.pop('hasPieces')
     session.pop('itemID')
+    session.pop('pieceNum')
     session.pop('donor')
     return render_template('person.html', success='Item added successfully!')
 
