@@ -116,11 +116,12 @@ CREATE TABLE ItemIn (
     status ENUM('Available', 'Holding', 'Delivered') DEFAULT 'Available',
     holdingRoomNum INT,
     holdingShelfNum INT,
-    PRIMARY KEY (ItemID, orderID),
+    PRIMARY KEY (ItemID, orderID, quantityNum),
     FOREIGN KEY (ItemID) REFERENCES Item(ItemID),
     FOREIGN KEY (orderID) REFERENCES Ordered(orderID),
     FOREIGN KEY (holdingRoomNum, holdingShelfNum) REFERENCES Location(roomNum, shelfNum)
 );
+
 
 CREATE TABLE Delivered (
     userName VARCHAR(50) NOT NULL,

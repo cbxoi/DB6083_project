@@ -65,7 +65,7 @@ Changed primary key to (**ItemID**, quantityNum, **userName**, **donateDate**)
 
 #### ItemIn
 
-ItemIn(**ItemID**, quantityNum, **orderID**, found, status, holdingRoomNum, holdingShelfNum)  
+ItemIn(**ItemID**, **quantityNum**, **orderID**, found, status, holdingRoomNum, holdingShelfNum)  
 
 ItemIn(ItemID) REFERENCES Item(ItemID)
 
@@ -75,7 +75,7 @@ ItemIn(holdingRoomNum, holdingShelfNum) REFERENCES Location(roomNum, shelfNum)
 
 <br>
 
-Added `quantityNum` to it but not as a primary key.
+Added `quantityNum` to it as a primary key to display different locations.
 
 Added `holdingRoomNum` for holding location for item
 
@@ -190,41 +190,31 @@ select * from piece where itemID = %s
 
 **Feature 7:**
 ```sql
-# Search orders by username
+# Check current location and status of the item
+SELECT holdingRoomNum, status 
+FROM ItemIn 
+WHERE orderID = %s AND ItemID = %s AND quantityNum = %s
+
+# Update item location and status
+UPDATE ItemIn
+SET holdingRoomNum = %s, holdingShelfNum = %s, status = %s
+WHERE orderID = %s AND ItemID = %s AND quantityNum = %s
+
+# Search by Client Username
 SELECT o.orderID, o.orderDate, o.orderNotes
 FROM Ordered o
 JOIN Person p ON o.client = p.userName
 WHERE p.userName = %s
 
-# Search orders by order ID
+# Search by orderid
+SELECT * FROM Ordered WHERE orderID = %s
+
+# Display Order Details
 SELECT i.ItemID, i.quantityNum, i.status, l.roomNum, l.shelfNum, l.shelfDescription
 FROM ItemIn i
 LEFT JOIN Location l ON i.holdingRoomNum = l.roomNum AND i.holdingShelfNum = l.shelfNum
 WHERE i.orderID = %s
 
-# Ensure location exists in the Location table
-SELECT COUNT(*) AS count FROM Location WHERE roomNum = %s AND shelfNum = %s
-
-# Insert new location if it does not exist
-INSERT INTO Location (roomNum, shelfNum, shelf, shelfDescription)
-VALUES (%s, %s, %s, %s)
-
-# Update item location and status
-#if change status to holding
-UPDATE ItemIn
-SET status = 'Holding', holdingRoomNum = %s, holdingShelfNum = %s
-WHERE orderID = %s AND status = 'Available'
-
-#if change status to avaliable
-UPDATE ItemIn
-SET status = 'Available', holdingRoomNum = %s, holdingShelfNum = %s
-WHERE orderID = %s
-
-# fetch updated data to dislay on website
-SELECT i.ItemID, i.quantityNum, i.status, l.roomNum, l.shelfNum, l.shelfDescription
-FROM ItemIn i
-LEFT JOIN Location l ON i.holdingRoomNum = l.roomNum AND i.holdingShelfNum = l.shelfNum
-WHERE i.orderID = %s
 ```
 
 **Feature 8:**
