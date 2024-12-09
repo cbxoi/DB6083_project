@@ -415,33 +415,33 @@ def prepare_order():
         room_number = request.form.get('roomNumber')
         shelf_number = request.form.get('shelfNumber')
 
-        # **Search Operation**
-        if client_username or (order_id and not room_number):
-            if client_username:
-                # Search orders by username
-                query = '''
-                    SELECT o.orderID, o.orderDate, o.orderNotes
-                    FROM Ordered o
-                    JOIN Person p ON o.client = p.userName
-                    WHERE p.userName = %s
-                '''
-                cursor.execute(query, (client_username,))
-                orders = cursor.fetchall()
+        # Search by Client Username
+        if client_username and not order_id:
+            query = '''
+                SELECT o.orderID, o.orderDate, o.orderNotes
+                FROM Ordered o
+                JOIN Person p ON o.client = p.userName
+                WHERE p.userName = %s
+            '''
+            cursor.execute(query, (client_username,))
+            orders = cursor.fetchall()
 
-                if not orders:
-                    return render_template('prepare_order.html', error=f"No orders found for client {client_username}.")
-                
-                return render_template('prepare_order.html', orders=orders)
+            if not orders:
+                return render_template('prepare_order.html', error=f"No orders found for client {client_username}.")
+            
+            # Display orders and allow selection of specific order ID
+            return render_template('prepare_order.html', orders=orders)
 
-            elif order_id:
-                # Search orders by order ID
+        # Search by Order ID or Update Location
+        if order_id:
+            if not room_number:  # Search order details
                 query = 'SELECT * FROM Ordered WHERE orderID = %s'
                 cursor.execute(query, (order_id,))
                 order = cursor.fetchone()
 
                 if not order:
                     return render_template('prepare_order.html', error=f"Order ID {order_id} does not exist.")
-                
+
                 item_query = '''
                     SELECT i.ItemID, i.quantityNum, i.status, l.roomNum, l.shelfNum, l.shelfDescription
                     FROM ItemIn i
@@ -453,66 +453,62 @@ def prepare_order():
 
                 return render_template('prepare_order.html', order=order, items=items)
 
-        # **Update Location Operation**
-        if order_id and room_number:
-            try:
-                # Ensure location exists in the Location table
-                location_check_query = '''
-                    SELECT COUNT(*) AS count FROM Location WHERE roomNum = %s AND shelfNum = %s
-                '''
-                cursor.execute(location_check_query, (room_number, shelf_number))
-                location_exists = cursor.fetchone()['count']
-
-                if not location_exists:
-                    # Insert new location if it doesn't exist
-                    insert_location_query = '''
-                        INSERT INTO Location (roomNum, shelfNum, shelf, shelfDescription)
-                        VALUES (%s, %s, %s, %s)
+            else:  # Update location
+                try:
+                    # Ensure location exists in the Location table
+                    location_check_query = '''
+                        SELECT COUNT(*) AS count FROM Location WHERE roomNum = %s AND shelfNum = %s
                     '''
-                    cursor.execute(insert_location_query, (room_number, shelf_number, 'Holding', 'Holding area for ready items'))
+                    cursor.execute(location_check_query, (room_number, shelf_number))
+                    location_exists = cursor.fetchone()['count']
+
+                    if not location_exists:
+                        # Insert new location if it doesn't exist
+                        insert_location_query = '''
+                            INSERT INTO Location (roomNum, shelfNum, shelf, shelfDescription)
+                            VALUES (%s, %s, %s, %s)
+                        '''
+                        cursor.execute(insert_location_query, (room_number, shelf_number, 'Holding', 'Holding area for ready items'))
+                        conn.commit()
+
+                    # Update item location and status
+                    if int(room_number) == 99:
+                        update_query = '''
+                            UPDATE ItemIn
+                            SET status = 'Holding', holdingRoomNum = %s, holdingShelfNum = %s
+                            WHERE orderID = %s AND status = 'Available'
+                        '''
+                    else:
+                        update_query = '''
+                            UPDATE ItemIn
+                            SET status = 'Available', holdingRoomNum = %s, holdingShelfNum = %s
+                            WHERE orderID = %s
+                        '''
+                    cursor.execute(update_query, (room_number, shelf_number, order_id))
                     conn.commit()
 
-                # Update item location and status
-                if int(room_number) == 99:
-                    update_query = '''
-                        UPDATE ItemIn
-                        SET status = 'Holding', holdingRoomNum = %s, holdingShelfNum = %s
-                        WHERE orderID = %s AND status = 'Available'
+                    # Fetch updated data
+                    item_query = '''
+                        SELECT i.ItemID, i.quantityNum, i.status, l.roomNum, l.shelfNum, l.shelfDescription
+                        FROM ItemIn i
+                        LEFT JOIN Location l ON i.holdingRoomNum = l.roomNum AND i.holdingShelfNum = l.shelfNum
+                        WHERE i.orderID = %s
                     '''
-                else:
-                    update_query = '''
-                        UPDATE ItemIn
-                        SET status = 'Available', holdingRoomNum = %s, holdingShelfNum = %s
-                        WHERE orderID = %s
-                    '''
-                cursor.execute(update_query, (room_number, shelf_number, order_id))
-                conn.commit()
+                    cursor.execute(item_query, (order_id,))
+                    items = cursor.fetchall()
 
-                # Fetch updated data
-                item_query = '''
-                    SELECT i.ItemID, i.quantityNum, i.status, l.roomNum, l.shelfNum, l.shelfDescription
-                    FROM ItemIn i
-                    LEFT JOIN Location l ON i.holdingRoomNum = l.roomNum AND i.holdingShelfNum = l.shelfNum
-                    WHERE i.orderID = %s
-                '''
-                cursor.execute(item_query, (order_id,))
-                items = cursor.fetchall()
+                    query = 'SELECT * FROM Ordered WHERE orderID = %s'
+                    cursor.execute(query, (order_id,))
+                    order = cursor.fetchone()
 
-                query = 'SELECT * FROM Ordered WHERE orderID = %s'
-                cursor.execute(query, (order_id,))
-                order = cursor.fetchone()
+                    return render_template('prepare_order.html', success=f"Order {order_id} updated with Room {room_number} and Shelf {shelf_number}.", order=order, items=items)
 
-                return render_template('prepare_order.html', success=f"Order {order_id} updated with Room {room_number} and Shelf {shelf_number}.", order=order, items=items)
+                except Exception as e:
+                    conn.rollback()
+                    print(f"Error updating order: {e}")
+                    return render_template('prepare_order.html', error="An error occurred while updating the order. Please try again.")
 
-            except Exception as e:
-                conn.rollback()
-                print(f"Error updating order: {e}")
-                return render_template('prepare_order.html', error="An error occurred while updating the order. Please try again.")
-
-        # If neither a search nor update, return an error
-        return render_template('prepare_order.html', error="Room number and shelf number are required to update location.")
-
-    # **Handle GET Requests**
+    # Handle GET Requests
     # If GET and `orderID` is provided in the query string, display order details
     order_id = request.args.get('orderID')
     if order_id:
@@ -533,6 +529,7 @@ def prepare_order():
             return render_template('prepare_order.html', order=order, items=items)
 
     return render_template('prepare_order.html')
+
 
 
 #------------------------------------------------------------------------------

@@ -8,10 +8,10 @@
 
     <!-- Display Error or Success Messages -->
     {% if error %}
-        <p>Error: {{ error }}</p>
+        Error: {{ error }}</p>
     {% endif %}
     {% if success %}
-        <p>Success: {{ success }}</p>
+        Success: {{ success }}</p>
     {% endif %}
 
     <!-- Search Form -->
@@ -26,23 +26,40 @@
         <button type="submit">Search</button>
     </form>
 
-    <!-- Display Orders if Found -->
+    <!-- Display Orders if Found (Client Username Search) -->
     {% if orders %}
         <h2>Orders for Client</h2>
-        <ul>
+        <table border="1">
+            <tr>
+                <th>Order ID</th>
+                <th>Order Date</th>
+                <th>Order Notes</th>
+                <th>Select</th>
+            </tr>
             {% for order in orders %}
-                <li>Order ID: {{ order.orderID }}, Date: {{ order.orderDate }}, Notes: {{ order.orderNotes }}</li>
+            <tr>
+                <td>{{ order.orderID }}</td>
+                <td>{{ order.orderDate }}</td>
+                <td>{{ order.orderNotes }}</td>
+                <td>
+                    <form action="/prepare_order" method="POST">
+                        <input type="hidden" name="orderID" value="{{ order.orderID }}">
+                        <button type="submit">View Details</button>
+                    </form>
+                </td>
+            </tr>
             {% endfor %}
-        </ul>
+        </table>
     {% endif %}
 
-    <!-- Display Order Details if Found -->
+    <!-- Display Order Details if Found (Order ID Search or Selection) -->
     {% if order %}
         <h2>Order Details</h2>
-        <p>Order ID: {{ order.orderID }}</p>
-        <p>Order Date: {{ order.orderDate }}</p>
-        <p>Order Notes: {{ order.orderNotes }}</p>
+        <p><strong>Order ID:</strong> {{ order.orderID }}</p>
+        <p><strong>Order Date:</strong> {{ order.orderDate }}</p>
+        <p><strong>Order Notes:</strong> {{ order.orderNotes }}</p>
 
+        <h3>Items in Order</h3>
         <table border="1">
             <tr>
                 <th>Item ID</th>
