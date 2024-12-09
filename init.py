@@ -473,7 +473,9 @@ def is_staff(username):
 
 def is_valid_client(username):
     with conn.cursor() as cursor:
-        cursor.execute("SELECT 1 FROM Person WHERE userName = %s", (username,))
+        cursor.execute(
+            "SELECT 1 FROM Act WHERE userName = %s AND roleID = 'client'", (username,)
+        )
         return cursor.fetchone() is not None
 
 

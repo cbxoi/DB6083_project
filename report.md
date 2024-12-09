@@ -112,6 +112,10 @@ Added `status`
 
 **item_added** - input of the information of relevant pieces (if exists) from the user
 
+**start_order** - Only staff person can create order for client person -- check username and role requirement.
+
+**add_to_order** - add items into the new order from the remaining items list and update the quantity number.
+
 **prepare_order** - input of the information of holding location of an order
 
 **user_orders** - show all the orders the current user 
@@ -184,6 +188,45 @@ insert into donatedby values(%s, %s, %s, %s)
 insert into piece values(%s, %s, %s, %s, %s, %s, %s, %s, %s)
 # show the pieces that have been added
 select * from piece where itemID = %s
+```
+**Feature 5:**
+```sql
+# Check username and role requirement
+SELECT 1 FROM Act WHERE userName = %s AND roleID = 'staff'
+SELECT 1 FROM Act WHERE userName = %s AND roleID = 'client'
+
+# Create new order
+INSERT INTO Ordered (orderDate, orderNotes, supervisor, client) VALUES (CURDATE(), %s, %s, %s                   
+```
+
+**Feature 6:**
+```sql
+# Create a drop down menu for staff to choose items from mainCategory/subCategory
+SELECT mainCategory, subCategory FROM Category ORDER BY mainCategory, subCategory"
+
+# Show item's information after select the category
+SELECT i.ItemID, i.iDescription, i.quantityNum 
+FROM Item i 
+WHERE i.mainCategory = %s AND i.subCategory = %s AND i.quantityNum > 0
+
+# Display the chosen item's quantity
+SELECT quantityNum FROM Item WHERE ItemID = %s"
+
+# If there exists an itemIn list that has the same itemID, update that itemIn
+SELECT quantityNum FROM ItemIn WHERE ItemID = %s AND orderID = %s",
+UPDATE ItemIn SET quantityNum = quantityNum + %s WHERE ItemID = %s AND orderID = %s"
+
+# If not, create a new itemIn
+INSERT INTO ItemIn (ItemID, orderID, quantityNum, found, status) VALUES (%s, %s, %s, FALSE, 'Holding')"
+
+# Update the remaining item quantity after adding
+UPDATE Item SET quantityNum = quantityNum - %s WHERE ItemID = %s",
+
+# Check the remaining item quatity is greater than 0, otherwise is sold out/no left/don't display
+SELECT i.ItemID, i.iDescription, i.quantityNum
+FROM Item i
+WHERE i.mainCategory = %s AND i.subCategory = %s AND i.quantityNum > 0
+
 ```
 
 **Feature 7:**

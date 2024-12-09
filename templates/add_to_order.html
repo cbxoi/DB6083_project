@@ -21,7 +21,9 @@
             {% for main_category, subcategories in category_map.items() %}
                 <option disabled>{{ main_category }}</option>
                 {% for subcategory in subcategories %}
-                    <option value="{{ main_category }}|{{ subcategory }}">
+                    {% set option_value = main_category + "|" + subcategory %}
+                    <option value="{{ option_value }}" 
+                        {% if selected_category == option_value %} selected {% endif %}>
                         {{ main_category }} - {{ subcategory }}
                     </option>
                 {% endfor %}
@@ -31,36 +33,37 @@
         {% endif %}
     </select>
     <button type="submit">Filter Items</button>
-   </form>
+    </form>
 
     {% if items %}
-        <h2>Available Items in Category: {{ selected_category }}</h2>
+    <h2>Available Items in Category: {{ selected_category }}</h2>
+    {% for item in items %}
+        <h3>Item ID: {{ item['ItemID'] }}</h3>
         <form method="POST">
             <table border="1">
                 <tr>
-                    <th>Item ID</th>
                     <th>Description</th>
                     <th>Available Quantity</th>
                     <th>Add Quantity</th>
                     <th>Action</th>
                 </tr>
-                {% for item in items %}
-                    <tr>
-                        <td>{{ item['ItemID'] }}</td>
-                        <td>{{ item['iDescription'] }}</td>
-                        <td>{{ item['quantityNum'] }}</td>
-                        <td>
-                            <input type="number" name="quantity" min="1" max="{{ item['quantityNum'] }}" required>
-                            <input type="hidden" name="item_id" value="{{ item['ItemID'] }}">
-                        </td>
-                        <td>
-                            <button type="submit">Add to Order</button>
-                        </td>
-                    </tr>
-                {% endfor %}
+                <tr>
+                    <td>{{ item['iDescription'] }}</td>
+                    <td>{{ item['quantityNum'] }}</td>
+                    <td>
+                        <input type="number" name="quantity" min="1" max="{{ item['quantityNum'] }}" required>
+                        <input type="hidden" name="item_id" value="{{ item['ItemID'] }}">
+                    </td>
+                    <td>
+                        <button type="submit">Add to Order</button>
+                    </td>
+                </tr>
             </table>
         </form>
-    {% endif %}
+    {% endfor %}
+{% else %}
+    <p>No items available for the selected category.</p>
+{% endif %}
 
     <br>
     <a href="/person">Back to Home</a>
