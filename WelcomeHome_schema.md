@@ -41,7 +41,7 @@ Ordered(supervisor) REFERENCES Person(userName)
 Ordered(client) REFERENCES Person(userName)
 
 ### ItemIn
-ItemIn(**ItemID**, quantityNum, **orderID**, found, status, holdingRoomNum, holdingShelfNum)  
+ItemIn(**ItemID**, **quantityNum**, **orderID**, found, status, holdingRoomNum, holdingShelfNum)  
 ItemIn(ItemID) REFERENCES Item(ItemID)
 ItemIn(orderID) REFERENCES Ordered(orderID)  
 ItemIn(holdingRoomNum, holdingShelfNum) REFERENCES Location(roomNum, shelfNum)

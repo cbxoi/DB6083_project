@@ -4,5 +4,6 @@ Project Schema-v2.pdf
 projectTableDefs.sql
 templates_needed.md
 data_for_testing.md
+projPart2.sql
 templates\show_posts.html
 templates\home.html
