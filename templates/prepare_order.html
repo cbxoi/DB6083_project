@@ -39,9 +39,9 @@
                 <th>Item ID</th>
                 <th>Quantity ID</th>
                 <th>Status</th>
-                <th>Current Room</th>
-                <th>Current Shelf</th>
-                <th>Shelf Description</th>
+                <th>Room</th>
+                <th>Shelf</th>
+                <th>Description</th>
                 <th>Action</th>
             </tr>
             {% for item in items %}
@@ -57,12 +57,12 @@
                     <form action="/prepare_order" method="POST">
                         <input type="hidden" name="orderID" value="{{ order.orderID }}">
                         <input type="hidden" name="ItemID" value="{{ item.ItemID }}">
-                        <input type="hidden" name="quantityNum" value="{{ item.quantityNum }}"> <!-- Use the specific quantity ID -->
+                        <input type="hidden" name="quantityNum" value="{{ item.quantityNum }}">
                         <label for="roomNumber">Room:</label>
-                        <input type="number" name="roomNumber" placeholder="Enter room number" required>
+                        <input type="number" name="roomNumber" required>
                         <label for="shelfNumber">Shelf:</label>
-                        <input type="number" name="shelfNumber" placeholder="Enter shelf number" required>
-                        <button type="submit">Update Location</button>
+                        <input type="number" name="shelfNumber" required>
+                        <button type="submit">Update</button>
                     </form>
                 </td>
             </tr>
@@ -70,7 +70,6 @@
         </table>
     {% endif %}
 
-    <br>
     <a href="/person">Back to Home</a>
 </body>
 </html>
